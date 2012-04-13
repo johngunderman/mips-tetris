@@ -6,9 +6,16 @@
 	X:	.word 0
 	.globl Y
 	Y:	.word 0
+	P:	.word 0
 	filename: 		.asciiz "tetrisboard.txt"
-	buffer: 		.asciiz	"This is a test"
 	newline:		.asciiz "\n"
+	print0:			.asciiz "0"
+	print1:			.asciiz "1"
+	print2:			.asciiz "2"
+	print3:			.asciiz "3"
+	print4:			.asciiz "4"
+	print5:			.asciiz "5"
+	print6:			.asciiz "6"
 	
 	.text
 	
@@ -47,7 +54,7 @@ GETINCREMENT:			#return 1 to $v1 if increment move past valid x,y values, else i
 	la $t1, BOARD		#load address of BOARD to $t1
 	add $t0, $t0, $t1	#address of current position
 	lw $v0, ($t0)		#returns value at x,y
-	lw $t0, X			#loading x so it can be incremented
+	lw $t0, X			#loading x so 	it can be incremented
 	addi $t0, $t0, 1	#increment x
 	addi $t1, $zero, 8
 	blt $t0, $t1, skipincx	#check if we moved past the last column
@@ -69,6 +76,8 @@ GETINCREMENT:			#return 1 to $v1 if increment move past valid x,y values, else i
 	skipincy:
 		sw $t0, Y
 		move $v1, $zero
+		j	fin				# jump to fin
+		
 	
 	fin:
 		jr $ra
@@ -148,36 +157,146 @@ GETY:
 PRINTBOARD:
 	# This opens our file to append to the end
 	la		$a0, filename	# Ouput filename	
-	li		$a1, 0x010A		# Mark file for writing
+	li		$a1, 0x010A		# Mark file for writing and append
+
 	li		$a2, 0x0080		# Mode is ignored
 	li		$v0, 13			# Syscall for file open
 	syscall
 	move 	$s6, $v0 		# Save the file descriptor
 
-	# We just need a value in the register to test 
-	addi	$t0, $zero, 1			# $t0 = $zero + 1
+	sw		$ra, 0($sp)		# Store return address onto the stack 
 
-	jal		printloop				# jump to printloop
+
+	j		printloop				# jump to printloop
 	
 
 	# This is actually printing the board 
 	printloop:
-		jal		GETINCREMENT	# jump to GETINCREMENT and save position to $ra
-		beq		$v1, $t0, finprint	# if $v1 == $t0 then finprint
 		
+		jal		GETINCREMENT	# jump to GETINCREMENT and save position to $ra
+		addi	$t1, $zero, 1			# $t0 = $zero + 1
+		
+		# This is our test to see if we still have more board spaces to print
+		beq		$v1, $t1, finprint	# if $v1 == $t0 then finprint
+
+		# These lines check which number to print we have to do it this way due to weird behavior in MIPS
+		addi	$t1, $zero, 0			# $1 = $zero + 0
+		beq		$v1, $t1, prin0	# if $v1 == $t1 then prin0
+
+		addi	$t1, $zero, 1			# $t1 = $zero + 1
+		beq		$v1, $t1, prin01 # if $v1 == $t1 then prin0
+		
+		addi	$t1, $zero, 2			# $t1 = $zero + 2
+		beq		$v1, $t1, prin2	# if $v1 == $t1 then prin2
+
+		addi	$t1, $zero, 3			# $t1 = $zero + 3
+		beq		$v1, $t1, prin3	# if $v1 == $t1 then prin3
+		
+		addi	$t1, $zero, 4			# $t1 = $zero + 4
+		beq		$v1, $t1, prin4	# if $v1 == $t1 then prin4
+		
+		addi	$t1, $zero, 5			# $t1 = $zero + 5
+		beq		$v1, $t1, prin5	# if $v1 == $t1 then prin5
+		
+		addi	$t1, $zero, 6			# $t1 = $zero + 6
+		beq		$v1, $t1, prin6	# if $v1 == $t1 then prin6
+		
+		j finprint
+		
+
+	prin0:
 		move	$a0, $s6 		# File descriptor
-		move	$a1, $v0		# Address for the buffer to write
-		li		$a2, 4			# Hard coded buffer length
+		la		$a1, print0		# Print the value '0'
+		
+
+		
+		li		$a2, 1			# Hard coded buffer length
 		li		$v0, 15			# Syscall for write to file
 		syscall
-#		move	$s5, $v0		# Move the bytes written 
-		j printloop 			# Jump back to the loop 
+
+		j		printloop				# jump to printloop
+
+	prin1:
+		move	$a0, $s6 		# File descriptor
+		la		$a1, print1		# Print the value '1'
+		
+	
+		li		$a2, 1			# Hard coded buffer length
+		li		$v0, 15			# Syscall for write to file
+		syscall
+
+		j		printloop				# jump to printloop
+
+	prin2:
+		move	$a0, $s6 		# File descriptor
+		la		$a1, print2		# Print the value '2'
+		
+	
+		li		$a2, 1			# Hard coded buffer length
+		li		$v0, 15			# Syscall for write to file
+		syscall
+
+		j		printloop				# jump to printloop		
+	
+	prin3:
+		move	$a0, $s6 		# File descriptor
+		la		$a1, print3		# Print the value '3'
+		
+	
+		li		$a2, 1			# Hard coded buffer length
+		li		$v0, 15			# Syscall for write to file
+		syscall
+
+		j		printloop				# jump to printloop
+
+	prin4:
+		move	$a0, $s6 		# File descriptor
+		la		$a1, print4		# Print the value '4'
+		
+	
+		li		$a2, 1			# Hard coded buffer length
+		li		$v0, 15			# Syscall for write to file
+		syscall
+
+		j		printloop				# jump to printloop
+
+	prin5:
+		move	$a0, $s6 		# File descriptor
+		la		$a1, print5		# Print the value '5'
+		
+	
+		li		$a2, 1			# Hard coded buffer length
+		li		$v0, 15			# Syscall for write to file
+		syscall
+
+		j		printloop				# jump to printloop
+
+	prin6:
+		move	$a0, $s6 		# File descriptor
+		la		$a1, print6		# Print the value '6'
+		
+	
+		li		$a2, 1			# Hard coded buffer length
+		li		$v0, 15			# Syscall for write to file
+		syscall
+
+		j		printloop				# jump to printloop
 
 	finprint:
+
+		# Before we close the file we print a newline
+		# This allows us to keep track of previous board states
+		# as well as the current state 
+		move 	$a0, $s6
+		la		$a1, newline		# Print a newline 
+		li		$a2, 1		# $a2 = 1
+		li		$v0, 15		# Syscall to write to file
+		syscall
+
+		# This will close our file 
 		li		$v0, 16			# Syscall for close file
 		move	$a0, $s6  		# File descriptor to close
 		syscall
-		jr		$ra					# jump to $ra
+		lw		$ra, 0($sp)		# Pop the return value from the stack. 
 
-	jr		$ra					# jump to $ra
-	
+		jr		$ra					# jump to $ra
