@@ -1,31 +1,38 @@
-# This is loading the file MIPS produces 
-filename = "C:\\Program Files (x86)\\QtSpim\\tetrisboard.txt"
+import subprocess
 
-# Actually open the file for read/write and store it
-file = open(filename, 'r+')
+# Launch our file in spim and hijack STDOUT and STDIN
+spim = subprocess.Popen(['spim', '-file', 'tetris.s'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines = True)
 
-# Loop through the file and look for the last line
-for line in file:
-	last = line
+# Just read in the first several lines which are all copyright info 
+s = spim.stdout.readline()
+s = spim.stdout.readline()
+s = spim.stdout.readline()
+s = spim.stdout.readline()
+s = spim.stdout.readline()
+s = spim.stdout.readline()
+spim.stdout.flush() 
 
-# Strip out the terminating characters that MIPS is writing 
-last = last.rstrip() 
+# This loop is just temporary to make sure the handoff is working correctly 
+x = 1
+while x < 6:
+	print s
 
-# Create an empty string that will be populated with our new data 
-final = ''
+	# Strip out our new line 
+	s = s.rstrip()
+	final = ''
 
-# Loop through each character of our string and increment it by one and append it to our final string 
-for c in last: 
-	i = int(c)
-	i = i + 1
-	c = str(i)
-	final = final + c
+	# Convert each character in our string to an integer, increment it and write it to the pipe
+	for c in s:
+		i = int(c)
+		i = i + 1
+		c = str(i) + '\n'
+		spim.stdin.write(c)
 
-# Write a newline character to the end of our string 
-final = final + '\n' 
+	# Send a 9 to spim to let it know we are done
+	spim.stdin.write('9\n')
 
-# Write our new board to the text file
-file.writelines(final)
+	# Wait for a response from SPIM 
+	s = spim.stdout.readline() 
+	spim.stdout.flush() 
 
-# Close the file since we are done with it 
-file.close()
+	x = x + 1

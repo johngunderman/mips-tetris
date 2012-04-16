@@ -6,17 +6,8 @@
 	X:	.word 0
 	.globl Y
 	Y:	.word 0
-	P:	.word 0
-	filename: 		.asciiz "tetrisboard.txt"
 	newline:		.asciiz "\n"
-	print0:			.asciiz "0"
-	print1:			.asciiz "1"
-	print2:			.asciiz "2"
-	print3:			.asciiz "3"
-	print4:			.asciiz "4"
-	print5:			.asciiz "5"
-	print6:			.asciiz "6"
-	
+
 	.text
 	
 .globl main
@@ -25,6 +16,14 @@ main:				#main has to be a global label
 	
 	jal		INITBOARD				# jump to INITBOARD
 	jal		PRINTBOARD				# jump to PRINTBOARD
+	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+	jal		PRINTBOARD				# jump to PRINTBOARD
+	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+	jal		PRINTBOARD				# jump to PRINTBOARD
+	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+	jal		PRINTBOARD				# jump to PRINTBOARD
+	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+	
 	
 	li		$v0, 10			# Syscall to end program 
 	syscall
@@ -155,17 +154,7 @@ GETY:
 
 .globl PRINTBOARD
 PRINTBOARD:
-	# This opens our file to append to the end
-	la		$a0, filename	# Ouput filename	
-	li		$a1, 0x010A		# Mark file for writing and append
-
-	li		$a2, 0x0080		# Mode is ignored
-	li		$v0, 13			# Syscall for file open
-	syscall
-	move 	$s6, $v0 		# Save the file descriptor
-
 	sw		$ra, 0($sp)		# Store return address onto the stack 
-
 
 	j		printloop				# jump to printloop
 	
@@ -179,124 +168,65 @@ PRINTBOARD:
 		# This is our test to see if we still have more board spaces to print
 		beq		$v1, $t1, finprint	# if $v1 == $t0 then finprint
 
-		# These lines check which number to print we have to do it this way due to weird behavior in MIPS
-		addi	$t1, $zero, 0			# $1 = $zero + 0
-		beq		$v1, $t1, prin0	# if $v1 == $t1 then prin0
+		add		$a0, $zero, $v0		# $a0 = $zero + $v0
+		li		$v0, 1		# system call #4 - print string
+		syscall				# execute	
 
-		addi	$t1, $zero, 1			# $t1 = $zero + 1
-		beq		$v1, $t1, prin01 # if $v1 == $t1 then prin0
-		
-		addi	$t1, $zero, 2			# $t1 = $zero + 2
-		beq		$v1, $t1, prin2	# if $v1 == $t1 then prin2
+		j printloop
 
-		addi	$t1, $zero, 3			# $t1 = $zero + 3
-		beq		$v1, $t1, prin3	# if $v1 == $t1 then prin3
-		
-		addi	$t1, $zero, 4			# $t1 = $zero + 4
-		beq		$v1, $t1, prin4	# if $v1 == $t1 then prin4
-		
-		addi	$t1, $zero, 5			# $t1 = $zero + 5
-		beq		$v1, $t1, prin5	# if $v1 == $t1 then prin5
-		
-		addi	$t1, $zero, 6			# $t1 = $zero + 6
-		beq		$v1, $t1, prin6	# if $v1 == $t1 then prin6
-		
-		j finprint
-		
+	finprint: 
 
-	prin0:
-		move	$a0, $s6 		# File descriptor
-		la		$a1, print0		# Print the value '0'
-		
+		li		$v0, 4		# system call #4 - print string
+		la		$a0, newline	# $a0 = $zero + 15
+		syscall				# execute
 
-		
-		li		$a2, 1			# Hard coded buffer length
-		li		$v0, 15			# Syscall for write to file
-		syscall
-
-		j		printloop				# jump to printloop
-
-	prin1:
-		move	$a0, $s6 		# File descriptor
-		la		$a1, print1		# Print the value '1'
-		
-	
-		li		$a2, 1			# Hard coded buffer length
-		li		$v0, 15			# Syscall for write to file
-		syscall
-
-		j		printloop				# jump to printloop
-
-	prin2:
-		move	$a0, $s6 		# File descriptor
-		la		$a1, print2		# Print the value '2'
-		
-	
-		li		$a2, 1			# Hard coded buffer length
-		li		$v0, 15			# Syscall for write to file
-		syscall
-
-		j		printloop				# jump to printloop		
-	
-	prin3:
-		move	$a0, $s6 		# File descriptor
-		la		$a1, print3		# Print the value '3'
-		
-	
-		li		$a2, 1			# Hard coded buffer length
-		li		$v0, 15			# Syscall for write to file
-		syscall
-
-		j		printloop				# jump to printloop
-
-	prin4:
-		move	$a0, $s6 		# File descriptor
-		la		$a1, print4		# Print the value '4'
-		
-	
-		li		$a2, 1			# Hard coded buffer length
-		li		$v0, 15			# Syscall for write to file
-		syscall
-
-		j		printloop				# jump to printloop
-
-	prin5:
-		move	$a0, $s6 		# File descriptor
-		la		$a1, print5		# Print the value '5'
-		
-	
-		li		$a2, 1			# Hard coded buffer length
-		li		$v0, 15			# Syscall for write to file
-		syscall
-
-		j		printloop				# jump to printloop
-
-	prin6:
-		move	$a0, $s6 		# File descriptor
-		la		$a1, print6		# Print the value '6'
-		
-	
-		li		$a2, 1			# Hard coded buffer length
-		li		$v0, 15			# Syscall for write to file
-		syscall
-
-		j		printloop				# jump to printloop
-
-	finprint:
-
-		# Before we close the file we print a newline
-		# This allows us to keep track of previous board states
-		# as well as the current state 
-		move 	$a0, $s6
-		la		$a1, newline		# Print a newline 
-		li		$a2, 1		# $a2 = 1
-		li		$v0, 15		# Syscall to write to file
-		syscall
-
-		# This will close our file 
-		li		$v0, 16			# Syscall for close file
-		move	$a0, $s6  		# File descriptor to close
-		syscall
-		lw		$ra, 0($sp)		# Pop the return value from the stack. 
-
+		lw		$ra, 0($sp)			# Pop our return address off the stack 
 		jr		$ra					# jump to $ra
+
+# This routine will read in code from STDIN and update our board 
+.globl UPDATEBOARD
+UPDATEBOARD:
+
+	# We want to load the board so we can update it with the new info from Python 
+	la		$t3, BOARD		# Load the address of the board 
+
+	updateloop:
+	
+		# Make MIPS wait for integer input 
+		li		$v0, 5		# $v0 = 5	
+		syscall				# execute
+
+		# We're using 9 as an escape code from Python
+		# We load it for comparison purposes 
+		addi	$t0, $zero, 9		# $t0 = $zero + 9
+		add		$t2, $zero, $v0		# $t2 = $zero + $v0
+		
+		# If we receive a 9 from Python, jump to the end 
+		beq		$t0, $t2, finupdate	# if $t0 == $t2 then finupdate
+
+		# Store our read in value into the board and move to the next space 
+		sw		$t2, ($t3)			# 
+		addi	$t3, $t3, 4			# $t3 = $t3 + 4
+		
+		# Print the data back out to STDOUT to see if Python receives it correctly 
+		add		$a0, $zero, $v0		# $a0 = $zero + $v0
+		li		$v0, 1				# $v0 = 1
+		syscall
+
+		# Jump back up to wait for more input from Python 
+		j updateloop
+
+	# This routine is for when we are finished hearing from Python 
+	finupdate:
+
+		######################################################
+		# This is where we will house a lot of the game logic
+		######################################################
+
+		# Print a new line to let Python know we're done 
+		li		$v0, 4		# system call #4 - print string
+		la		$a0, newline	# $a0 = $zero + 15
+		syscall				# execute
+
+		# Return 
+		jr $ra 
