@@ -1,5 +1,7 @@
 import subprocess, pygame
 
+clock = pygame.time.Clock()
+
 
 def run_spim():
     # Launch our file in spim and hijack STDOUT and STDIN
@@ -48,8 +50,24 @@ def init_pygame():
     screen = pygame.display.set_mode(size)
     return screen
 
+def main_loop():
+    while True:
+        clock.tick(60);
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                print "goodbye"
+                return
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                print "right arrow hit"
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                print "left arrow hit"
+
 
 if __name__ == "__main__":
     run_spim()
     init_pygame()
+    main_loop()
 
