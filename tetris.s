@@ -16,13 +16,17 @@ main:				#main has to be a global label
 	
 	jal		INITBOARD				# jump to INITBOARD
 	jal		PRINTBOARD				# jump to PRINTBOARD
-	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
-	jal		PRINTBOARD				# jump to PRINTBOARD
-	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
-	jal		PRINTBOARD				# jump to PRINTBOARD
-	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
-	jal		PRINTBOARD				# jump to PRINTBOARD
-	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+	jal		UPDATEBOARD				# jump to UPDATEBOARD
+	jal		PRINTBOARD				# jump to PRINTBOARD and save position to $ra
+	
+
+#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+#	jal		PRINTBOARD				# jump to PRINTBOARD
+#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+#	jal		PRINTBOARD				# jump to PRINTBOARD
+#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
+#	jal		PRINTBOARD				# jump to PRINTBOARD
+#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
 	
 	
 	li		$v0, 10			# Syscall to end program 
@@ -216,7 +220,7 @@ PRINTBOARD:
 # This routine will read in code from STDIN and update our board 
 .globl UPDATEBOARD
 UPDATEBOARD:
-	sw		$ra, 0($sp)		# Store return address onto the stack 
+	sw		$ra, 4($sp)		# Store return address onto the stack 
 
 
 	# We want to load the board so we can update it with the new info from Python 
@@ -228,41 +232,169 @@ UPDATEBOARD:
 		li		$v0, 5		# $v0 = 5	
 		syscall				# execute
 
-		# We're using 9 as an escape code from Python
-		# We load it for comparison purposes 
-		addi	$t0, $zero, 9		# $t0 = $zero + 9
+		# Load the interger input into a register
 		add		$t2, $zero, $v0		# $t2 = $zero + $v0
+
+		# Determine which piece needs to be created 
+		addi	$t0, $zero, 1			# $t0 = $zer0 + 1
+		beq		$t0, $t2, CREATEP	# if $t0 == $t2 then CREATEP
+		
+		addi	$t0, $zero, 2			# $t0 = $zero + 2	
+#		beq		$t0, $t2, CREATES	# if $t0 == $t2 then CREATES
+		
+		addi	$t0, $zero, 3			# $t0 = $zero + 3	
+#		beq		$t0, $t2, CREATEZ	# if $t0 == $t2 then CREATEZ
+		
+		addi	$t0, $zero, 4			# $t0 = $zero + 4
+#		beq		$t0, $t2, CREATEBZ	# if $t0 == $t2 then CREATEBZ
+		
+		addi	$t0, $zero, 5			# $t0 = $zero + 5
+#		beq		$t0, $t2, CREATEL	# if $t0 == $t2 then CREATEL
+		
+		addi	$t0, $zero, 6			# $t0 = $zero + 6
+#		beq		$t0, $t2, CREATEBL	# if $t0 == $t2 then CREATEBL
+		
+		addi	$t0, $zero, 7			# $t0 = $zero + 7
+#		beq		$t0, $t2, CREATET	# if $t0 == $t2 then CREATET
 		
 		# If we receive a 9 from Python, jump to the end 
+		addi	$t0, $zero, 9		# $t0 = $zero + 9
 		beq		$t0, $t2, finupdate	# if $t0 == $t2 then finupdate
 
-		# Store our read in value into the board and move to the next space 
-		sw		$t2, ($t3)			# 
-		addi	$t3, $t3, 4			# $t3 = $t3 + 4
-		
-		# Print the data back out to STDOUT to see if Python receives it correctly 
-		add		$a0, $zero, $v0		# $a0 = $zero + $v0
-		li		$v0, 1				# $v0 = 1
-		syscall
-
-		lw		$ra, 0($sp)			# Pop our return address off the stack 
-
 		# Jump back up to wait for more input from Python 
-		j updateloop
+		j finupdate
 
 	# This routine is for when we are finished hearing from Python 
 	finupdate:
 
-	#	jal		CHECKBOARD				# jump to CHECKBOARD and save position to $ra
+		lw		$ra, 4($sp)		# Load return address from stack 
 		
-
-		# Print a new line to let Python know we're done 
-		li		$v0, 4		# system call #4 - print string
-		la		$a0, newline	# $a0 = $zero + 15
-		syscall				# execute
-
 		# Return 
 		jr $ra 
+
+.globl CREATEP
+CREATEP:
+
+	# Store our return address on the stack 
+	sw		$ra, 0($sp)		# 
+	
+
+	# Load X and Y
+	lw		$t0, X		# 
+	lw		$t1, Y		# 
+	
+	# We're picking our middle position to be 3 so let's move X there
+	# We also want to make sure we're starting at our top row as well 
+	addi	$t0, $zero, 3			# $t0 = X + 3 
+	addi	$t1, $zero, 0			# $t1 = $zero + 0
+	
+	
+	# Store the first position of the board 
+	addi	$t2, $zero, 1		# $t1 = $zero + 1
+	add		$a0, $zero, $t0		# $a0 = $zero + $t0
+	add		$a1, $zero, $t1		# $a1 = $tzero+ $t1
+	add		$a2, $zero, $t2		# $a2 = $zero + $t2
+	jal		SETXY				# jump to SETXY and save position to $ra
+	
+
+	# $t9 holds the rotation state. 1 for vertical, 2 for horizontal 
+	addi	$t9, $zero, 1			# $t7 = $zero + 1
+
+	ploop:
+
+		# Make MIPS wait for integer input 
+		li		$v0, 5		# $v0 = 5	
+		syscall				# execute
+
+		# Load X and Y
+		lw		$t0, X		# 
+		lw		$t1, Y		# 
+
+		# A counter for moving pieces 
+		addi	$t8, $zero, 1			# $t8 = $zero + 1
+		
+
+		# If Python sends us a 1 we want to shift our piece right
+		addi	$t3, $zero, 1			# $t3 = $zero + 1
+		beq		$v0, $t3, shiftpr	# if $v0 == $t3 then shiftpr
+
+		# If Python sends us a 2 we want to shift our piece left
+		addi	$t3, $zero, 2			# $t3 = $zero + 2
+		beq		$v0, $t3, shiftpl	# if $v0 == $t3 then shiftpl
+
+		# If Python sends us a 3 then we want to rotate the piece 
+		addi	$t3, $zero, 3			# $t3 = $zero + 3
+		beq		$v0, $t3, rotatep	# if $v0 == $t3 then target
+		
+		j		dropp				# jump to dropp
+
+	shiftpr:
+		addi	$t0, $t0, 1			# $t0 = $t0 + 1
+
+		# If $t9 == 1 then the pipe is vertical so move to that loop 
+		addi	$t3, $zero, 1			# $t3 = $zero + 1
+		beq		$t9, $t3, shiftprvloop	# if $t9 == $t3 then shiftprvloop
+		
+		# If $t9 == 0 then the pipe is horizontal so move to that loop 
+		addi	$t3, $zero, 2			# $t3 = $zero + 2
+		beq		$t9, $t3, shiftprhloop	# if $t9 == $t3 then shiftprhloop
+		
+		# If we don't hit one of these then something went wrong and it's best to change anything 
+		j		finprint				# jump to finprint
+		
+
+		shiftprvloop:
+			# If we're moving past the end of the board we don't want to move
+			addi	$t7, $zero, 8			# $t7 = $zero + 8
+			beq		$t0, $t7, finp	# if $t0 == $t7 then finp
+
+			# Get the value stored at X,Y
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY				# jump to GETARGXY and save position to $ra
+
+			# If this position is not free, then we don't want to shift 
+			bne		$v0, $zero, finp	# if $v0 != $zero then finp
+
+			# If the position is free, then we store a 1 in $t3
+			addi	$t3, $zero, 1		# $t3 = $zero + 1
+
+			# If Y is 0 then we are at the top so we can move
+			beq		$t1, $zero, moveprv	# if $t1 == $zero then moveprv
+			
+			# Subtract 1 from y to move up 
+			addi	$t7, $zero, 1		# $t7 = $zero + 1
+			sub		$t1, $t1, $t7		# $t1 = $t1 - $t7
+
+			# If we've run this loop 4 times we've accounted for each square
+			addi	$t8, $t8, 1			# $8 = $t8 + 1
+			addi	$t7, $zero, 1		# $t7 = $zero + 1
+			beq		$t8, $t7, moveprv		# if $t8 == $t1 then moveprv
+
+			# Jump back to the top of our loop 
+			j		shiftprvloop			# jump to shiftprloop
+			
+	shiftpl:
+
+	rotatep:
+
+	dropp:
+
+	moveprv:
+
+		# Load the original X and Y
+		lw		$t0, X		# 
+		lw		$t1, Y		# 
+		
+		# Shift our x value to the right once 
+		addi	$t2, $t0, 1			# $t0 = $t0 + 1
+
+
+		
+
+	finp:
+		jr		$ra					# jump to $ra
+	  
 
 # This is the procedure that is going to handle a lot of our game logic
 .globl CHECKBOARD
