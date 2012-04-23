@@ -319,6 +319,16 @@ CREATEP:
 
 	ploop:
 
+        # Prompt for user input from Python 
+        li        $a0, 1        # $a0 = 1
+        li        $v0, 1        # $v0 = 1
+        syscall
+
+        # Print a new line
+        li      $v0, 4      # system call #4 - print string
+        la      $a0, newline    # $a0 = $zero + 15
+        syscall             # execute
+
 		# Make MIPS wait for integer input 
 		li		$v0, 5		# $v0 = 5	
 		syscall				# execute
@@ -429,7 +439,7 @@ CREATEP:
 
 			# Set this piece to 0 since we moved past the space
 			add		$a0, $t4, $zero		# $a0 = $t4 + $zero
-			add		$a1, $t4, $zero		# $a1 = $t4 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t4 + $zero
 			add		$a2, $zero, $zero	# $a2 = $zero + $zero
 
 			# We're done so let's drop our piece 
@@ -571,7 +581,7 @@ CREATEP:
 		jal		SETXY				# jump to SETXY and save position to $ra
 
         # After we drop, we print 
-        jal        PRINTBOARD       # jump to PRINTBOARD and save position to $ra
+        jal     PRINTBOARD       # jump to PRINTBOARD and save position to $ra
         
 		# If we make it this far then we are mid drop so we want more input 
 		j		ploop				# jump to ploop
