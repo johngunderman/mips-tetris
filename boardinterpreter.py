@@ -45,7 +45,7 @@ def main_loop():
         print "data: ",data
         spim.stdout.flush()
 
-        spim.stdin.write('1\n') 
+        spim.stdin.write('1\n')
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -63,7 +63,7 @@ def main_loop():
         #data = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         #data = "00000000000100000000000000000001000000000000000000000001000000000000000000100000000000000000000000010000000000000100000000111100"
 
-        if len(data) == 16 * 8 + 8:
+        if len(data) == 128:
             for x in range(0,16):
                 for y in range(0,8):
                     d = data[x * 8 + y]
