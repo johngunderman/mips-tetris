@@ -235,6 +235,11 @@ UPDATEBOARD:
         li        $a0, 8        # $a0 = 8   
         li        $v0, 1        # $v0 = 1
         syscall
+
+        # Print a new line
+        li      $v0, 4      # system call #4 - print string
+        la      $a0, newline    # $a0 = $zero + 15
+        syscall             # execute
 	
 		# Make MIPS wait for integer input 
 		li		$v0, 5		# $v0 = 5	
