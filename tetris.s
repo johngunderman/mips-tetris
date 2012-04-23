@@ -6,6 +6,10 @@
 	X:	.word 0
 	.globl Y
 	Y:	.word 0
+    .globl PX
+    PX: .word 0
+    .globl PY
+    PY: .word 0 
 	newline:		.asciiz "\n"
 
 	.text
@@ -170,14 +174,13 @@ GETY:
 NEXTROW:
 	lw		$t0, Y			#
 	sw		$zero, X		# 
-	addi	$t0, $zero, 1			# $t0 = $zero + 1
+	addi	$t0, $t0, 1			    # $t0 = $t0 + 1
 	addi	$t1, $zero, 16			# $t2 = $zero + 16
 	blt		$t0, $t1, skiprowinc	# if $t0 < $t1 then skiprowinc
 	sw		$zero, Y		# 
 	addi	$v0, $zero, 1			# $v0 = $zero + 1
 	j		finrowinc				# jump to finrowinc
 		
-
 	skiprowinc:
 		sw		$t0, Y		# 
 		add		$v0, $zero, $zero		# $v0 = $zero + $zero
@@ -278,9 +281,9 @@ CREATEP:
 	# Store our return address on the stack 
 	sw		$ra, 0($sp)		# 
 	
-	# Load X and Y
-	lw		$t0, X		# 
-	lw		$t1, Y		# 
+	# Load PX and PPY
+	lw		$t0, PX		# 
+	lw		$t1, PY		# 
 	
 	# We're picking our middle position to be 3 so let's move X there
 	# We also want to make sure we're starting at our top row as well 
@@ -303,9 +306,9 @@ CREATEP:
 		li		$v0, 5		# $v0 = 5	
 		syscall				# execute
 
-		# Load X and Y
-		lw		$t0, X		# 
-		lw		$t1, Y		# 
+		# Load PX and PY
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
 
 		# A counter for moving pieces 
 		addi	$t8, $zero, 1			# $t8 = $zero + 1
@@ -335,7 +338,7 @@ CREATEP:
 
 	shiftpr:
 
-		# We add one to our X-value for testing purposes 
+		# We add one to our PX-value for testing purposes 
 		addi	$t0, $t0, 1			# $t0 = $t0 + 1
 
 		# If we're moving past the end of the board we don't want to move
@@ -356,7 +359,7 @@ CREATEP:
 
 		shiftprvloop:
 
-			# Get the value stored at X,Y
+			# Get the value stored at PX,PY
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
@@ -364,7 +367,7 @@ CREATEP:
 			# If this position is not free, then we don't want to shift 
 			bne		$v0, $zero, droppv	# if $v0 != $zero then droppv
 
-			# If Y is 0 then we are at the top so we can move
+			# If PY is 0 then we are at the top so we can move
 			beq		$t1, $zero, moveprv	# if $t1 == $zero then moveprv
 			
 			# Subtract 1 from y to move up 
@@ -381,7 +384,7 @@ CREATEP:
 
 		shiftprhloop:
 
-			# Get the value stored at X,Y
+			# Get the value stored at PX,PY
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
@@ -398,8 +401,8 @@ CREATEP:
 			add		$a2, $t3, $zero		# $a2 = $t3 + $zero
 			jal		SETXY				# jump to SETXY and save position to $ra
 			
-			# We want to store the new value of X
-			sw		$t0, X		# 
+			# We want to store the new value of PX
+			sw		$t0, PX		# 
 			
 			# We now want to subtract to the beginning of the pipe
 			sub		$t4, $t0, $t3		# $t4 = $t4 - $t3
@@ -421,7 +424,7 @@ CREATEP:
 		# If we're in the first column we don't even want to bother shifting 
 		beq		$t0, $zero, droppv	# if $t0 == $zero then droppv
 
-		# We subtract 1 from our X value for testing purposes 
+		# We subtract 1 from our PX value for testing purposes 
 		addi	$t6, $zero, 1		# $t6 = $zero + 1
 		sub		$t0, $t0, $t6		# $t0 = $t0 - $t6
 		
@@ -438,7 +441,7 @@ CREATEP:
 
 		shiftplvloop:
 
-			# Get the value stored at X,Y
+			# Get the value stored at PX,PY
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
@@ -446,7 +449,7 @@ CREATEP:
 			# If this position is not free, then we don't want to shift 
 			bne		$v0, $zero, droppv	# if $v0 != $zero then droppv
 
-			# If Y is 0 then we are at the top so we can move
+			# If PY is 0 then we are at the top so we can move
 			beq		$t1, $zero, moveplv	# if $t1 == $zero then moveprv
 			
 			# Subtract 1 from y to move up 
@@ -473,7 +476,7 @@ CREATEP:
 			sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
 			
 			
-			# Get the value stored at X,Y
+			# Get the value stored at PX,PY
 			add		$a0, $t4, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
@@ -487,8 +490,8 @@ CREATEP:
 			add		$a2, $t3, $zero		# $a2 = $t3 + $zero
 			jal		SETXY				# jump to SETXY and save position to $ra
 
-			# We want to store this value in X since it represents the new pivot
-			sw		$t0, X		# 
+			# We want to store this value in PX since it represents the new pivot
+			sw		$t0, PX		# 
 			
 			# Since we subtracted once before coming here
 			# We want to add 1 to get back to the space to set 0 
@@ -506,12 +509,12 @@ CREATEP:
 
 	droppv:
 
-		# Store our X marker as it's incredibly important 
-		sw		$t0, X		# 
+		# Store our PX marker as it's incredibly important 
+		sw		$t0, PX		# 
 		
-		# Load our X and Y value 
-		lw		$t0, X		# 
-		lw		$t1, Y		# 
+		# Load our PX and PY value 
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
 
 		# We add 1 to look at the square below ours
 		addi	$t2, $zero, 1		# $t2 = $zero + 1
@@ -562,9 +565,9 @@ CREATEP:
 		
 		moveprvloop:
 
-			# Load the original X and Y
-			lw		$t0, X		# 
-			lw		$t1, Y		# 
+			# Load the original PX and PY
+			lw		$t0, PX		# 
+			lw		$t1, PY		# 
 			
 			# Shift our x value to the right once 
 			addi	$t2, $t0, 1			# $t0 = $t0 + 1
@@ -602,9 +605,9 @@ CREATEP:
 		
 		moveplvloop:
 
-			# Load the original X and Y
-			lw		$t0, X		# 
-			lw		$t1, Y		# 
+			# Load the original PX and PY
+			lw		$t0, PX		# 
+			lw		$t1, PY		# 
 			
 			# Shift our x value to the right once 
 			addi	$t3, $zero, 1		# $t3 = $zero + 1

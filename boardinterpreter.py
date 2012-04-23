@@ -86,6 +86,6 @@ def display_block(r,c):
 
 
 if __name__ == "__main__":
-    #run_spim()
+    run_spim()
     init_pygame()
     main_loop()
