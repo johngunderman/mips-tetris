@@ -3,8 +3,25 @@ import subprocess, pygame, random
 clock = pygame.time.Clock()
 spim = subprocess.Popen(['spim', '-file', 'tetris.s'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines = True)
 
+PROMPT_TICK  = "1\n"
+PROMPT_PIECE = "8\n"
+END_GAME     = "9\n"
 
-WIDTH = 320
+MOVE_LEFT  = "1\n"
+MOVE_RIGHT = "2\n"
+ROTATE     = "3\n"
+DO_NOTHING = "4\n"
+
+PIPE_PIECE   = "1\n"
+SQUARE_PIECE = "2\n"
+Z_PIECE      = "3\n"
+BZ_PIECE     = "4\n"
+L_PIECE      = "5\n"
+BL_PIECE     = "6\n"
+T_PIECE      = "7\n"
+
+
+WIDTH  = 320
 HEIGHT = 640
 
 def run_spim():
@@ -39,13 +56,13 @@ def init_pygame():
 
 def main_loop():
     while True:
-        clock.tick(2);
-
+        clock.tick(2)
+        has_sent_tick = False
         data = spim.stdout.readline()
         print "data: ",data
         spim.stdout.flush()
 
-        spim.stdin.write('1\n')
+        tick_event = DO_NOTHING      # Our default
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -60,8 +77,13 @@ def main_loop():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 print "up arrow hit"
 
-        #data = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-        #data = "00000000000100000000000000000001000000000000000000000001000000000000000000100000000000000000000000010000000000000100000000111100"
+
+        if data == PROMPT_PIECE:
+            print "prompted for piece"
+            spim.stdin.write(PIPE_PIECE)
+
+        if not data == PROMPT_TICK:
+            spim.stdin.write(tick_event)
 
         if len(data) == 128:
             for x in range(0,16):
