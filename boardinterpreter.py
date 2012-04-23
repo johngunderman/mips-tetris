@@ -57,7 +57,6 @@ def init_pygame():
 def main_loop():
     while True:
         clock.tick(2)
-        has_sent_tick = False
         data = spim.stdout.readline()
         print "data: ",data
         spim.stdout.flush()
@@ -82,7 +81,8 @@ def main_loop():
             print "prompted for piece"
             spim.stdin.write(PIPE_PIECE)
 
-        if not data == PROMPT_TICK:
+        if data == PROMPT_TICK:
+            print "ticking"
             spim.stdin.write(tick_event)
 
         if len(data) == 128:
