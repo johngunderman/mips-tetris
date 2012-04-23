@@ -1,4 +1,4 @@
-import subprocess, pygame, random 
+import subprocess, pygame, random
 
 clock = pygame.time.Clock()
 
@@ -6,31 +6,31 @@ WIDTH = 320
 HEIGHT = 640
 
 def run_spim():
-	 # Launch our file in spim and hijack STDOUT and STDIN
-	spim = subprocess.Popen(['spim', '-file', 'tetris.s'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines = True)
+     # Launch our file in spim and hijack STDOUT and STDIN
+    spim = subprocess.Popen(['spim', '-file', 'tetris.s'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines = True)
 
-	# Just read in the first several lines which are all copyright info 
-	s = spim.stdout.readline()
-	s = spim.stdout.readline()
-	s = spim.stdout.readline()
-	s = spim.stdout.readline()
-	s = spim.stdout.readline()
-	s = spim.stdout.readline()
-	spim.stdout.flush()
+    # Just read in the first several lines which are all copyright info
+    s = spim.stdout.readline()
+    s = spim.stdout.readline()
+    s = spim.stdout.readline()
+    s = spim.stdout.readline()
+    s = spim.stdout.readline()
+    s = spim.stdout.readline()
+    spim.stdout.flush()
 
-	print s  
+    print s
 
-	#c = str(random.randint(1,7))
-	c = str(1) 
+    #c = str(random.randint(1,7))
+    c = str(1)
 
-	spim.stdin.write(c+'\n') 
+    spim.stdin.write(c+'\n')
 
-	s = spim.stdout.readline()
-	spim.stdout.flush()
+    s = spim.stdout.readline()
+    spim.stdout.flush()
 
-	print s
+    print s
 
-	spim.stdin.write('9\n') 
+    spim.stdin.write('9\n')
 
 
 def init_pygame():
@@ -56,6 +56,8 @@ def main_loop():
                 print "right arrow hit"
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
                 print "left arrow hit"
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                print "up arrow hit"
 
         #data = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         data = "00000000000100000000000000000001000000000000000000000001000000000000000000100000000000000000000000010000000000000100000000111100"
@@ -66,7 +68,6 @@ def main_loop():
                 d = data[x * 8 + y]
                 if d != "0":
                     display_block(x,y)
-
 
         pygame.display.update()
 
@@ -85,6 +86,6 @@ def display_block(r,c):
 
 
 if __name__ == "__main__":
-    run_spim()
+    #run_spim()
     init_pygame()
     main_loop()
