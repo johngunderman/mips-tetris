@@ -291,10 +291,6 @@ CREATEP:
 	# Store our return address on the stack 
 	sw		$ra, 0($sp)		# 
 	
-	# Load PX and PPY
-	lw		$t0, PX		# 
-	lw		$t1, PY		# 
-	
 	# We're picking our middle position to be 3 so let's move X there
 	# We also want to make sure we're starting at our top row as well 
 	addi	$t0, $zero, 3			# $t0 = X + 3 
@@ -549,23 +545,26 @@ CREATEP:
 		lw		$t1, PY		# 
 
 		# We add 1 to look at the square below ours
-		addi	$t2, $zero, 1		# $t2 = $zero + 1
-		add		$t1, $t2, $zero		# $t1 = $t2 + $zero
-
+		addi	$t1, $t1, 1		# $t2 = $zero + 1
+	
+        # Check to make sure we haven't gone to the end of the board 
+        addi    $t4, $zero, 16           # $t4 = $zero + 16
+        beq     $t1, $t4, UPDATEBOARD    # if $t1 == $t4 then UPDATEBOARD
+        
 		# Check what value is stored at this location 
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+        # If the space isn't empty, we're done so check the board 
+        bne     $v0, $zero, UPDATEBOARD # if $v0 != $zero then CHECKBOARD
 
         # Load our PX and PY value 
         lw      $t0, PX     # 
         lw      $t1, PY     # 
 
         addi    $t1, $t1, 1            # $t1 = $t1 + 1
-	
-		# If the space isn't empty, we're done so check the board 
-	#	bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
-
+		
         # If we're not done, we store our new pointer
         sw        $t0, PX        # 
         sw        $t1, PY        # 
