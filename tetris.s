@@ -230,6 +230,11 @@ UPDATEBOARD:
 	la		$t3, BOARD		# Load the address of the board 
 
 	updateloop:
+
+        # Print an 8 to Python to prompt for new piece
+        li        $a0, 8        # $a0 = 8   
+        li        $v0, 1        # $v0 = 1
+        syscall
 	
 		# Make MIPS wait for integer input 
 		li		$v0, 5		# $v0 = 5	
@@ -301,7 +306,7 @@ CREATEP:
 	addi	$t9, $zero, 1			# $t7 = $zero + 1
 
     # We want to print our board back to Python 
-    jal        PRINTBOARD                # jump to PRINTBOARD and save position to $ra
+    jal     PRINTBOARD           # jump to PRINTBOARD and save position to $ra
 
     # Start the piece loop 
     j        ploop                # jump to ploop
@@ -345,13 +350,13 @@ CREATEP:
 
 	shiftpr:
 
+        # If we're moving past the end of the board we don't want to move
+        addi    $t7, $zero, 7           # $t7 = $zero + 8
+        beq     $t0, $t7, droppv    # if $t0 == $t7 then droppv
+
 		# We add one to our PX-value for testing purposes 
 		addi	$t0, $t0, 1			# $t0 = $t0 + 1
-
-		# If we're moving past the end of the board we don't want to move
-		addi	$t7, $zero, 8			# $t7 = $zero + 8
-		beq		$t0, $t7, droppv	# if $t0 == $t7 then droppv
-
+		
 		# If $t9 == 1 then the pipe is vertical so move to that loop 
 		addi	$t3, $zero, 1			# $t3 = $zero + 1
 		beq		$t9, $t3, shiftprvloop	# if $t9 == $t3 then shiftprvloop
