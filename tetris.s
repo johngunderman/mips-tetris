@@ -593,13 +593,14 @@ CREATEP:
 		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
 		
 		sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
-		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
 
 		# Set this value to 0 since we dropped below it 
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t4, $zero		# $a1 = $t4 + $zero
 		add		$a2, $zero, $zero	# $a2 = $zero + $zero
 		jal		SETXY				# jump to SETXY and save position to $ra
+
+        beq     $t4, $zero, ploop   # if $t4 == $zero then ploop
 
         # After we drop, we print 
         jal     PRINTBOARD       # jump to PRINTBOARD and save position to $ra
