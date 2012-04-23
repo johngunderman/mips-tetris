@@ -68,9 +68,17 @@ def main_loop():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
                 print "left arrow hit"
 
-        display_block(0,0)
-        display_block(0,1)
-        display_block(2,2)
+        #data = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        data = "00000000000100000000000000000001000000000000000000000001000000000000000000100000000000000000000000010000000000000100000000111100"
+
+
+        for x in range(0,16):
+            for y in range(0,8):
+                d = data[x * 8 + y]
+                if d != "0":
+                    display_block(x,y)
+
+
         pygame.display.update()
 
 
