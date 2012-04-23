@@ -569,7 +569,10 @@ CREATEP:
 		add		$a1, $t4, $zero		# $a1 = $t4 + $zero
 		add		$a2, $zero, $zero	# $a2 = $zero + $zero
 		jal		SETXY				# jump to SETXY and save position to $ra
-		
+
+        # After we drop, we print 
+        jal        PRINTBOARD       # jump to PRINTBOARD and save position to $ra
+        
 		# If we make it this far then we are mid drop so we want more input 
 		j		ploop				# jump to ploop
 			
