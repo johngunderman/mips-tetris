@@ -299,7 +299,11 @@ CREATEP:
 	# We also want to make sure we're starting at our top row as well 
 	addi	$t0, $zero, 3			# $t0 = X + 3 
 	addi	$t1, $zero, 0			# $t1 = $zero + 0
-	
+
+    # Store the value for safe keeping
+    sw        $t0, PX        # 
+    sw        $t1, PY        # 
+    
 	# Store the first position of the board 
 	addi	$t2, $zero, 1		# $t1 = $zero + 1
 	add		$a0, $zero, $t0		# $a0 = $zero + $t0
@@ -310,14 +314,14 @@ CREATEP:
 	# $t9 holds the rotation state. 1 for vertical, 2 for horizontal 
 	addi	$t9, $zero, 1			# $t7 = $zero + 1
 
-    # We want to print our board back to Python 
-    jal     PRINTBOARD           # jump to PRINTBOARD and save position to $ra
-
     # Start the piece loop 
     j        ploop                # jump to ploop
     
 
 	ploop:
+
+        # We want to print our board back to Python 
+        jal     PRINTBOARD           # jump to PRINTBOARD and save position to $ra
 
         # Prompt for user input from Python 
         li        $a0, 1        # $a0 = 1
@@ -534,11 +538,12 @@ CREATEP:
 
 	rotatep:
 
-	droppv:
+	droppv:       
 
 		# Store our PX marker as it's incredibly important 
 		sw		$t0, PX		# 
-		
+        sw      $t1, PY     # 
+        
 		# Load our PX and PY value 
 		lw		$t0, PX		# 
 		lw		$t1, PY		# 
@@ -551,19 +556,35 @@ CREATEP:
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 		jal		GETARGXY			# jump to GETARGXY and save position to $ra
-		
+
+        # Load our PX and PY value 
+        lw      $t0, PX     # 
+        lw      $t1, PY     # 
+
+        addi    $t1, $t1, 1            # $t1 = $t1 + 1
+	
 		# If the space isn't empty, we're done so check the board 
-		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
-		
+	#	bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
+
+        # If we're not done, we store our new pointer
+        sw        $t0, PX        # 
+        sw        $t1, PY        # 
+        	
 		# Set our new value to 1 
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add		$a2, $t2, $zero		# $a2 = $t2 + $zero
+		addi	$a2, $zero, 1		# $a2 = $t2 + 1
 		jal		SETXY				# jump to SETXY and save position to $ra
+
+        # Load our PX and PY value 
+        lw      $t0, PX     # 
+        lw      $t1, PY     # 
 
 		# Keep subtracting one to move up the piece unless we hit the top of the board 
 		sub		$t4, $t1, $t2		# $t4 = $t1 - $t2
-		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop		
+		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
+
+        # execute   		
 		
 		sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
 		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
