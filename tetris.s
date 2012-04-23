@@ -21,9 +21,9 @@ main:				#main has to be a global label
 	jal		INITBOARD				# jump to INITBOARD
 	jal		PRINTBOARD				# jump to PRINTBOARD
 	jal		UPDATEBOARD				# jump to UPDATEBOARD
-	jal		PRINTBOARD				# jump to PRINTBOARD and save position to $ra
-	
 
+
+#	jal		PRINTBOARD				# jump to PRINTBOARD and save position to $ra
 #	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
 #	jal		PRINTBOARD				# jump to PRINTBOARD
 #	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
