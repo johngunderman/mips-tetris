@@ -382,16 +382,45 @@ CREATEP:
 
 	moveprv:
 
-		# Load the original X and Y
-		lw		$t0, X		# 
-		lw		$t1, Y		# 
+		addi	$t6, $zero, 4			# $t6 = $zero + 4
+		addi	$t5, $zero, 1			# $t5 = $zero + 1
 		
-		# Shift our x value to the right once 
-		addi	$t2, $t0, 1			# $t0 = $t0 + 1
+		moveprvloop:
 
+			# Load the original X and Y
+			lw		$t0, X		# 
+			lw		$t1, Y		# 
+			
+			# Shift our x value to the right once 
+			addi	$t2, $t0, 1			# $t0 = $t0 + 1
+	 
+			# Load 1 into a register since that's what we use for this piece 
+			addi	$t3, $zero, 1			# $t3 = $zero + 1
+					
+			# Set the value at the current position 
+			add		$a0, $zero, $t2		# $a0 = $zero + $t2
+			add		$a1, $zero, $t1		# $a1 = $zero + $t1
+			add		$a2, $zero, $t3		# $a2 = $zero + $t3
+			jal		SETXY				# jump to SETXY
 
+			# We want to set the spot we moved from to zero 
+			add		$a0, $zero, $t0		# $a0 = $zero + $t0
+			add		$a1, $zero, $t1		# $a1 = $zero + $t1
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
 		
+			# If we're at the top of the board or we're done shifting pieces we wait for the next input
+			beq		$t1, $zero, ploop	# if $t1 == $zero then ploop
+			beq		$t5, $t6, ploop		# if $t5 == $t6 then ploop
 
+
+			# We need to increase our counter and move our y-value 
+			addi	$t4, $zero, 1		# $t4 = $zero + 1
+			add		$t5, $t5, $t4		# $t5 = $t5 + $t4
+			sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
+						
+			j		moveprvloop			# jump to moveprvloop
+			
 	finp:
 		jr		$ra					# jump to $ra
 	  
