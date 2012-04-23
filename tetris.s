@@ -278,7 +278,6 @@ CREATEP:
 	# Store our return address on the stack 
 	sw		$ra, 0($sp)		# 
 	
-
 	# Load X and Y
 	lw		$t0, X		# 
 	lw		$t1, Y		# 
@@ -288,7 +287,6 @@ CREATEP:
 	addi	$t0, $zero, 3			# $t0 = X + 3 
 	addi	$t1, $zero, 0			# $t1 = $zero + 0
 	
-	
 	# Store the first position of the board 
 	addi	$t2, $zero, 1		# $t1 = $zero + 1
 	add		$a0, $zero, $t0		# $a0 = $zero + $t0
@@ -296,7 +294,6 @@ CREATEP:
 	add		$a2, $zero, $t2		# $a2 = $zero + $t2
 	jal		SETXY				# jump to SETXY and save position to $ra
 	
-
 	# $t9 holds the rotation state. 1 for vertical, 2 for horizontal 
 	addi	$t9, $zero, 1			# $t7 = $zero + 1
 
@@ -325,12 +322,25 @@ CREATEP:
 		addi	$t3, $zero, 3			# $t3 = $zero + 3
 		beq		$v0, $t3, rotatep	# if $v0 == $t3 then target
 		
-		j		dropp				# jump to dropp
+		# If our piece is in position 1 then drop vertical 
+		addi	$t3, $zero, 1			# $t3 = $zero + 1
+		beq		$t9, $t3, droppv	# if $t9 == $t3 then droppv
+		
+		# If our piece is in position 2 then drop horizontal 
+		addi	$t3, $zero, 2			# $t3 = $zero + 2
+		beq		$t9, $t3, dropph	# if $t9 == $t3 then dropph
+		
+		# If we get here something is wrong so we wait for another input 
+		j		ploop				# jump to ploop
 
 	shiftpr:
 
 		# We add one to our X-value for testing purposes 
 		addi	$t0, $t0, 1			# $t0 = $t0 + 1
+
+		# If we're moving past the end of the board we don't want to move
+		addi	$t7, $zero, 8			# $t7 = $zero + 8
+		beq		$t0, $t7, droppv	# if $t0 == $t7 then droppv
 
 		# If $t9 == 1 then the pipe is vertical so move to that loop 
 		addi	$t3, $zero, 1			# $t3 = $zero + 1
@@ -341,13 +351,10 @@ CREATEP:
 		beq		$t9, $t3, shiftprhloop	# if $t9 == $t3 then shiftprhloop
 		
 		# If we don't hit one of these then something went wrong and it's best to change anything 
-		j		finprint				# jump to finprint
+		j		ploop				# jump to ploop
 		
 
 		shiftprvloop:
-			# If we're moving past the end of the board we don't want to move
-			addi	$t7, $zero, 8			# $t7 = $zero + 8
-			beq		$t0, $t7, ploop	# if $t0 == $t7 then finp
 
 			# Get the value stored at X,Y
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -355,7 +362,7 @@ CREATEP:
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
 
 			# If this position is not free, then we don't want to shift 
-			bne		$v0, $zero, ploop	# if $v0 != $zero then ploop
+			bne		$v0, $zero, droppv	# if $v0 != $zero then droppv
 
 			# If Y is 0 then we are at the top so we can move
 			beq		$t1, $zero, moveprv	# if $t1 == $zero then moveprv
@@ -372,13 +379,47 @@ CREATEP:
 			# Jump back to the top of our loop 
 			j		shiftprvloop			# jump to shiftprloop
 
-		shiftprvhloop:
+		shiftprhloop:
 
+			# Get the value stored at X,Y
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+			
+			# If this position is not free, then we don't want to shift
+			bne		$t0, $zero, dropph	# if $t0 != $zero then dropph
+			
+			# Store a 1 in a register since we'll need it 
+			addi	$t3, $zero, 1			# $t3 = $zero + 1
+
+			# If the spot is free we want to shift there 
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+			
+			# We want to store the new value of X
+			sw		$t0, X		# 
+			
+			# We now want to subtract to the beginning of the pipe
+			sub		$t4, $t0, $t3		# $t4 = $t4 - $t3
+			sub		$t4, $t4, $t3		# $t4 = $t4- $t3
+			sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+			sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+
+			# Set this piece to 0 since we moved past the space
+			add		$a0, $t4, $zero		# $a0 = $t4 + $zero
+			add		$a1, $t4, $zero		# $a1 = $t4 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+
+			# We're done so let's drop our piece 
+			j		dropph				# jump to ploop
+																														
 			
 	shiftpl:
 
 		# If we're in the first column we don't even want to bother shifting 
-		beq		$t0, $zero, ploop	# if $t0 == $zero then ploop
+		beq		$t0, $zero, droppv	# if $t0 == $zero then droppv
 
 		# We subtract 1 from our X value for testing purposes 
 		addi	$t6, $zero, 1		# $t6 = $zero + 1
@@ -393,7 +434,7 @@ CREATEP:
 		beq		$t9, $t3, shiftplhloop	# if $t9 == $t3 then shiftprhloop
 		
 		# If we don't hit one of these then something went wrong and it's best to change anything 
-		j		finprint				# jump to finprint
+		j		droppv				# jump to droppv
 
 		shiftplvloop:
 
@@ -403,7 +444,7 @@ CREATEP:
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
 
 			# If this position is not free, then we don't want to shift 
-			bne		$v0, $zero, ploop	# if $v0 != $zero then ploop
+			bne		$v0, $zero, droppv	# if $v0 != $zero then droppv
 
 			# If Y is 0 then we are at the top so we can move
 			beq		$t1, $zero, moveplv	# if $t1 == $zero then moveprv
@@ -418,11 +459,101 @@ CREATEP:
 			beq		$t8, $t7, moveplv		# if $t8 == $t1 then moveprv
 
 			# Jump back to the top of our loop 
-			j		shiftplvloop			# jump to shiftprloop			
+			j		shiftplvloop			# jump to shiftprloop
+
+		shiftplhloop:
+
+			# We will need this later
+			addi	$t3, $zero, 1			# $t3 = $zero + 1
+			
+			# Since we subtracted one at the top, I'm in position 
+			# 3 in relation to the pivot. I need to get to 0
+			sub		$t4, $t0, $t3		# $t4 = $t0 - $t3
+			sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+			sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+			
+			
+			# Get the value stored at X,Y
+			add		$a0, $t4, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+			
+			# If this position is not free, then we don't want to shift
+			bne		$t0, $zero, dropph	# if $t0 != $zero then dropph
+
+			# If the spot is free we want to shift there 
+			add		$a0, $t4, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# We want to store this value in X since it represents the new pivot
+			sw		$t0, X		# 
+			
+			# Since we subtracted once before coming here
+			# We want to add 1 to get back to the space to set 0 
+			add		$t0, $t0, $t3		# $t0 = $t0 + $t3
+			
+			# Set this piece to 0 since we moved past the space
+			add		$a0, $t0, $zero		# $a0 = $t4 + $zero
+			add		$a1, $t4, $zero		# $a1 = $t4 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+
+			# We're done so let's drop the piece 
+			j		dropph				# jump to dropph
 
 	rotatep:
 
-	dropp:
+	droppv:
+
+		# Store our X marker as it's incredibly important 
+		sw		$t0, X		# 
+		
+		# Load our X and Y value 
+		lw		$t0, X		# 
+		lw		$t1, Y		# 
+
+		# We add 1 to look at the square below ours
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		add		$t1, $t2, $zero		# $t1 = $t2 + $zero
+
+		# Check what value is stored at this location 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+		
+		# If the space isn't empty, we're done so check the board 
+		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
+		
+		# Set our new value to 1 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $t2, $zero		# $a2 = $t2 + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
+
+		# Keep subtracting one to move up the piece unless we hit the top of the board 
+		sub		$t4, $t1, $t2		# $t4 = $t1 - $t2
+		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop		
+		
+		sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
+		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
+		
+		sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
+		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
+		
+		sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
+		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
+
+		# Set this value to 0 since we dropped below it 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t4, $zero		# $a1 = $t4 + $zero
+		add		$a2, $zero, $zero	# $a2 = $zero + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
+		
+		# If we make it this far then we are mid drop so we want more input 
+		j		ploop				# jump to ploop
+			
+	dropph:
 
 	moveprv:
 
@@ -454,9 +585,8 @@ CREATEP:
 			jal		SETXY				# jump to SETXY and save position to $ra
 		
 			# If we're at the top of the board or we're done shifting pieces we wait for the next input
-			beq		$t1, $zero, ploop	# if $t1 == $zero then ploop
-			beq		$t5, $t6, ploop		# if $t5 == $t6 then ploop
-
+			beq		$t1, $zero, droppv	# if $t1 == $zero then droppv
+			beq		$t5, $t6, droppv	# if $t5 == $t6 then droppv
 
 			# We need to increase our counter and move our y-value 
 			addi	$t4, $zero, 1		# $t4 = $zero + 1
@@ -496,8 +626,8 @@ CREATEP:
 			jal		SETXY				# jump to SETXY and save position to $ra
 		
 			# If we're at the top of the board or we're done shifting pieces we wait for the next input
-			beq		$t1, $zero, ploop	# if $t1 == $zero then ploop
-			beq		$t5, $t6, ploop		# if $t5 == $t6 then ploop
+			beq		$t1, $zero, droppv	# if $t1 == $zero then droppv
+			beq		$t5, $t6, droppv	# if $t5 == $t6 then droppv
 
 
 			# We need to increase our counter and move our y-value 
