@@ -300,6 +300,13 @@ CREATEP:
 	# $t9 holds the rotation state. 1 for vertical, 2 for horizontal 
 	addi	$t9, $zero, 1			# $t7 = $zero + 1
 
+    # We want to print our board back to Python 
+    jal        PRINTBOARD                # jump to PRINTBOARD and save position to $ra
+
+    # Start the piece loop 
+    j        ploop                # jump to ploop
+    
+
 	ploop:
 
 		# Make MIPS wait for integer input 

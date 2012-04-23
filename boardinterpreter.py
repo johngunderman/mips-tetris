@@ -45,6 +45,8 @@ def main_loop():
         print "data: ",data
         spim.stdout.flush()
 
+        spim.stdin.write('1\n') 
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
