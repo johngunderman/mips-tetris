@@ -19,15 +19,14 @@ def run_spim():
     #s = spim.stdout.readline()
     #spim.stdout.flush()
 
-   # spim.stdin.write('1\n')
+    #spim.stdin.write('1\n')
 
-#    s = spim.stdout.readline()
-#    spim.stdout.flush()
+    #s = spim.stdout.readline()
+    #spim.stdout.flush()
 
     #print s
 
-#    spim.stdin.write('9\n')
-
+    #spim.stdin.write('9\n')
 
 def init_pygame():
     pygame.init()
