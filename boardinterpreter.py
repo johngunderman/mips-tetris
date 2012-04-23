@@ -2,6 +2,8 @@ import subprocess, pygame
 
 clock = pygame.time.Clock()
 
+WIDTH = 320
+HEIGHT = 640
 
 def run_spim():
     # Launch our file in spim and hijack STDOUT and STDIN
@@ -44,11 +46,12 @@ def run_spim():
 
 def init_pygame():
     pygame.init()
-
-    size = width, height = 320, 640
+    pygame.display.init()
+    pygame.display.set_caption("MIPS Tetris!")
+    size = WIDTH, HEIGHT
 
     screen = pygame.display.set_mode(size)
-    return screen
+
 
 def main_loop():
     while True:
@@ -64,6 +67,24 @@ def main_loop():
                 print "right arrow hit"
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
                 print "left arrow hit"
+
+        display_block(0,0)
+        display_block(0,1)
+        display_block(2,2)
+        pygame.display.update()
+
+
+def display_block(r,c):
+    BLOCK_X = WIDTH / 8
+    BLOCK_Y = HEIGHT / 16
+
+    left = c * BLOCK_X
+    top = r * BLOCK_Y
+
+    surface = pygame.display.get_surface()
+
+    rect = pygame.Rect(left + 1, top + 1, BLOCK_X - 1, BLOCK_Y - 1)
+    surface.fill(pygame.Color(0,255,255), rect)
 
 
 if __name__ == "__main__":
