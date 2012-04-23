@@ -122,3 +122,5 @@ if __name__ == "__main__":
     run_spim()
     init_pygame()
     main_loop()
+    print "terminating spim subprocess..."
+    spim.terminate()
