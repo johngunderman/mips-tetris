@@ -20,6 +20,11 @@ L_PIECE      = "5\n"
 BL_PIECE     = "6\n"
 T_PIECE      = "7\n"
 
+BLACK = pygame.Color(0,0,0)
+RED   = pygame.Color(255,0,0)
+GREEN = pygame.Color(0,255,0)
+BLUE  = pygame.Color(0,0,255)
+
 
 WIDTH  = 320
 HEIGHT = 640
@@ -71,10 +76,13 @@ def main_loop():
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
                 print "right arrow hit"
+                tick_event = MOVE_RIGHT
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
                 print "left arrow hit"
+                tick_event = MOVE_LEFT
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 print "up arrow hit"
+                tick_event = ROTATE
 
 
         if data == PROMPT_PIECE:
@@ -89,13 +97,15 @@ def main_loop():
             for x in range(0,16):
                 for y in range(0,8):
                     d = data[x * 8 + y]
-                    if d != "0":
-                        display_block(x,y)
+                    if d == "0":
+                        display_block(x,y, BLACK)
+                    if d == "1":
+                        display_block(x,y, RED)
 
         pygame.display.update()
 
 
-def display_block(r,c):
+def display_block(r,c, color):
     BLOCK_X = WIDTH / 8
     BLOCK_Y = HEIGHT / 16
 
@@ -105,7 +115,7 @@ def display_block(r,c):
     surface = pygame.display.get_surface()
 
     rect = pygame.Rect(left + 1, top + 1, BLOCK_X - 1, BLOCK_Y - 1)
-    surface.fill(pygame.Color(0,255,255), rect)
+    surface.fill(color, rect)
 
 
 if __name__ == "__main__":
