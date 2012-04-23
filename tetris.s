@@ -312,7 +312,6 @@ CREATEP:
 
 		# A counter for moving pieces 
 		addi	$t8, $zero, 1			# $t8 = $zero + 1
-		
 
 		# If Python sends us a 1 we want to shift our piece right
 		addi	$t3, $zero, 1			# $t3 = $zero + 1
@@ -329,6 +328,8 @@ CREATEP:
 		j		dropp				# jump to dropp
 
 	shiftpr:
+
+		# We add one to our X-value for testing purposes 
 		addi	$t0, $t0, 1			# $t0 = $t0 + 1
 
 		# If $t9 == 1 then the pipe is vertical so move to that loop 
@@ -346,18 +347,15 @@ CREATEP:
 		shiftprvloop:
 			# If we're moving past the end of the board we don't want to move
 			addi	$t7, $zero, 8			# $t7 = $zero + 8
-			beq		$t0, $t7, finp	# if $t0 == $t7 then finp
+			beq		$t0, $t7, ploop	# if $t0 == $t7 then finp
 
 			# Get the value stored at X,Y
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal		GETARGXY				# jump to GETARGXY and save position to $ra
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
 
 			# If this position is not free, then we don't want to shift 
-			bne		$v0, $zero, finp	# if $v0 != $zero then finp
-
-			# If the position is free, then we store a 1 in $t3
-			addi	$t3, $zero, 1		# $t3 = $zero + 1
+			bne		$v0, $zero, ploop	# if $v0 != $zero then ploop
 
 			# If Y is 0 then we are at the top so we can move
 			beq		$t1, $zero, moveprv	# if $t1 == $zero then moveprv
@@ -368,13 +366,59 @@ CREATEP:
 
 			# If we've run this loop 4 times we've accounted for each square
 			addi	$t8, $t8, 1			# $8 = $t8 + 1
-			addi	$t7, $zero, 1		# $t7 = $zero + 1
+			addi	$t7, $zero, 4		# $t7 = $zero + 1
 			beq		$t8, $t7, moveprv		# if $t8 == $t1 then moveprv
 
 			# Jump back to the top of our loop 
 			j		shiftprvloop			# jump to shiftprloop
+
+		shiftprvhloop:
+
 			
 	shiftpl:
+
+		# If we're in the first column we don't even want to bother shifting 
+		beq		$t0, $zero, ploop	# if $t0 == $zero then ploop
+
+		# We subtract 1 from our X value for testing purposes 
+		addi	$t6, $zero, 1		# $t6 = $zero + 1
+		sub		$t0, $t0, $t6		# $t0 = $t0 - $t6
+		
+		# If $t9 == 1 then the pipe is vertical so move to that loop 
+		addi	$t3, $zero, 1			# $t3 = $zero + 1
+		beq		$t9, $t3, shiftplvloop	# if $t9 == $t3 then shiftprvloop
+		
+		# If $t9 == 0 then the pipe is horizontal so move to that loop 
+		addi	$t3, $zero, 2			# $t3 = $zero + 2
+		beq		$t9, $t3, shiftplhloop	# if $t9 == $t3 then shiftprhloop
+		
+		# If we don't hit one of these then something went wrong and it's best to change anything 
+		j		finprint				# jump to finprint
+
+		shiftplvloop:
+
+			# Get the value stored at X,Y
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# If this position is not free, then we don't want to shift 
+			bne		$v0, $zero, ploop	# if $v0 != $zero then ploop
+
+			# If Y is 0 then we are at the top so we can move
+			beq		$t1, $zero, moveplv	# if $t1 == $zero then moveprv
+			
+			# Subtract 1 from y to move up 
+			addi	$t7, $zero, 1		# $t7 = $zero + 1
+			sub		$t1, $t1, $t7		# $t1 = $t1 - $t7
+
+			# If we've run this loop 4 times we've accounted for each square
+			addi	$t8, $t8, 1			# $8 = $t8 + 1
+			addi	$t7, $zero, 4		# $t7 = $zero + 1
+			beq		$t8, $t7, moveplv		# if $t8 == $t1 then moveprv
+
+			# Jump back to the top of our loop 
+			j		shiftplvloop			# jump to shiftprloop			
 
 	rotatep:
 
@@ -420,6 +464,48 @@ CREATEP:
 			sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
 						
 			j		moveprvloop			# jump to moveprvloop
+
+	moveplv:
+		
+		addi	$t6, $zero, 4			# $t6 = $zero + 4
+		addi	$t5, $zero, 1			# $t5 = $zero + 1
+		
+		moveplvloop:
+
+			# Load the original X and Y
+			lw		$t0, X		# 
+			lw		$t1, Y		# 
+			
+			# Shift our x value to the right once 
+			addi	$t3, $zero, 1		# $t3 = $zero + 1
+			sub		$t2, $t0, $t3		# $t2 = $t0 - $t3
+			
+			# Load 1 into a register since that's what we use for this piece 
+			addi	$t3, $zero, 1			# $t3 = $zero + 1
+					
+			# Set the value at the current position 
+			add		$a0, $zero, $t2		# $a0 = $zero + $t2
+			add		$a1, $zero, $t1		# $a1 = $zero + $t1
+			add		$a2, $zero, $t3		# $a2 = $zero + $t3
+			jal		SETXY				# jump to SETXY
+
+			# We want to set the spot we moved from to zero 
+			add		$a0, $zero, $t0		# $a0 = $zero + $t0
+			add		$a1, $zero, $t1		# $a1 = $zero + $t1
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+		
+			# If we're at the top of the board or we're done shifting pieces we wait for the next input
+			beq		$t1, $zero, ploop	# if $t1 == $zero then ploop
+			beq		$t5, $t6, ploop		# if $t5 == $t6 then ploop
+
+
+			# We need to increase our counter and move our y-value 
+			addi	$t4, $zero, 1		# $t4 = $zero + 1
+			add		$t5, $t5, $t4		# $t5 = $t5 + $t4
+			sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
+						
+			j		moveplvloop			# jump to moveprvloop		
 			
 	finp:
 		jr		$ra					# jump to $ra
