@@ -93,6 +93,10 @@ def main_loop():
             print "ticking"
             spim.stdin.write(tick_event)
 
+        if data == END_GAME:
+            print "game ending"
+            return
+
         if len(data) == 128:
             for x in range(0,16):
                 for y in range(0,8):

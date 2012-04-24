@@ -19,19 +19,8 @@ main:				#main has to be a global label
 	addu	$s7, $0, $ra	#save the return address in a global register
 	
 	jal		INITBOARD				# jump to INITBOARD
-	jal		PRINTBOARD				# jump to PRINTBOARD
+#	jal		PRINTBOARD				# jump to PRINTBOARD
 	jal		UPDATEBOARD				# jump to UPDATEBOARD
-
-
-#	jal		PRINTBOARD				# jump to PRINTBOARD and save position to $ra
-#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
-#	jal		PRINTBOARD				# jump to PRINTBOARD
-#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
-#	jal		PRINTBOARD				# jump to PRINTBOARD
-#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
-#	jal		PRINTBOARD				# jump to PRINTBOARD
-#	jal		UPDATEBOARD				# jump to UPDATEBOARD and save position to $ra
-	
 	
 	li		$v0, 10			# Syscall to end program 
 	syscall
@@ -225,6 +214,7 @@ PRINTBOARD:
 UPDATEBOARD:
 	sw		$ra, 4($sp)		# Store return address onto the stack 
 
+	jal		PRINTBOARD				# jump to PRINTBOARD and save position to $ra
 
 	# We want to load the board so we can update it with the new info from Python 
 	la		$t3, BOARD		# Load the address of the board 
@@ -393,9 +383,6 @@ CREATEP:
 
 			# If this position is not free, then we don't want to shift 
 			bne		$v0, $zero, droppv	# if $v0 != $zero then droppv
-
-			# If PY is 0 then we are at the top so we can move
-			beq		$t1, $zero, moveprv	# if $t1 == $zero then moveprv
 			
 			# Subtract 1 from y to move up 
 			addi	$t7, $zero, 1		# $t7 = $zero + 1
@@ -549,7 +536,7 @@ CREATEP:
 	
         # Check to make sure we haven't gone to the end of the board 
         addi    $t4, $zero, 16           # $t4 = $zero + 16
-        beq     $t1, $t4, UPDATEBOARD    # if $t1 == $t4 then UPDATEBOARD
+        beq     $t1, $t4, CHECKBOARD    # if $t1 == $t4 then UPDATEBOARD
         
 		# Check what value is stored at this location 
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -557,7 +544,7 @@ CREATEP:
 		jal		GETARGXY			# jump to GETARGXY and save position to $ra
 
         # If the space isn't empty, we're done so check the board 
-        bne     $v0, $zero, UPDATEBOARD # if $v0 != $zero then CHECKBOARD
+        bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
         # Load our PX and PY value 
         lw      $t0, PX     # 
@@ -581,9 +568,7 @@ CREATEP:
 
 		# Keep subtracting one to move up the piece unless we hit the top of the board 
 		sub		$t4, $t1, $t2		# $t4 = $t1 - $t2
-		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
-
-        # execute   		
+		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop	
 		
 		sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
 		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop
@@ -702,23 +687,22 @@ CHECKBOARD:
 	sw		$ra, 0($sp)		# Store return address onto the stack 
 
 	# We want to check the top row of our board
-	addi	$t0, $zero, 8			# $t0 = $zero + 8
-	addi	$t1, $zero, 0			# $t1 = $zero + 0
+	addi	$t9, $zero, 0			# $t1 = $zero + 0
 	addi	$t4, $zero, 0			# $t4 = $zero + 1
 	
 	j		toprow				# jump to toprow
 	
 	toprow:
 
-		jal		GETINCREMENT				# jump to GETINCREMENT and save position to $ra
+		jal		GETINCREMENT		# jump to GETINCREMENT and save position to $ra
 
 		# If any space in the top board is not zero then the game is over
 		bne		$v0, $zero, GAMEOVER	# vf $t0 != $zero then GAMEOVER
 		
 		# If we hit space 8 on our board then we are on the second row 
-		addi	$t1, $zero, 1			# $t1 = $zero + 1
-		beq		$t1, $t0, aftertop	# if $t1 == $t0 then aftertop
-		
+		addi	$t0, $zero, 8			# $t0 = $zero + 8
+		addi	$t9, $t9, 1			# $t1 = $zero + 1
+		beq		$t9, $t0, aftertop	# if $t1 == $t0 then aftertop
 
 		j		toprow				# jump to toprow
 		
@@ -743,6 +727,7 @@ CHECKBOARD:
 
 		# If our counter makes it to 8, then we have to clear this row 
 		addi	$t4, $zero, 1			# $t4 = $zero + 1
+		addi	$t0, $zero, 8			# $t0 = $zero + 8
 		beq		$t4, $t0, clearrow	# if $t0 4= $t0 tclearrowrget
 		
 		j		aftertop				# jump to aftertop
@@ -776,7 +761,6 @@ CHECKBOARD:
 			
 			# Call SETXY to set our new value
 			add		$a1, $zero, $t1		# $a1 = $zero + $t1
-
 			add		$a2, $zero, $v0		# $a2 = $zero + $v0
 			jal		SETXY				# jump to SETXY and save position to $ra
 			
@@ -791,7 +775,7 @@ CHECKBOARD:
 			j		clearrow				# jump to clearrow											
 		
 	finishcheck:
-		jr		$ra					# jump to $ra
+		j		UPDATEBOARD				# jump to UPDATEBOARD
 		
 
 .globl GAMEOVER
@@ -800,6 +784,14 @@ GAMEOVER:
 	li		$v0, 1		# system call #4 - print string
 	addi	$a0, $zero, 9			# $a0 = $zero + 9
 	syscall				# execute
+
+	# Print a new line
+    li      $v0, 4      # system call #4 - print string
+    la      $a0, newline    # $a0 = $zero + 15
+    syscall             # execute
+
+	li		$v0, 10			# Syscall to end program 
+	syscall
 
 	jr		$ra					# jump to $ra
 	
