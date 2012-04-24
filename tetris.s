@@ -287,8 +287,8 @@ CREATEP:
 	addi	$t1, $zero, 0			# $t1 = $zero + 0
 
     # Store the value for safe keeping
-    sw        $t0, PX        # 
-    sw        $t1, PY        # 
+    sw      $t0, PX        # 
+    sw      $t1, PY        # 
     
 	# Store the first position of the board 
 	addi	$t2, $zero, 1		# $t1 = $zero + 1
@@ -356,11 +356,14 @@ CREATEP:
 	shiftpr:
 
         # If we're moving past the end of the board we don't want to move
-        addi    $t7, $zero, 7           # $t7 = $zero + 8
+        addi    $t7, $zero, 7       # $t7 = $zero + 8
         beq     $t0, $t7, droppv    # if $t0 == $t7 then droppv
 
 		# We add one to our PX-value for testing purposes 
 		addi	$t0, $t0, 1			# $t0 = $t0 + 1
+
+		# We need a counter initialized for looping purposes 
+		addi	$t8, $zero, 1			# $t8 = $zero + 1
 		
 		# If $t9 == 1 then the pipe is vertical so move to that loop 
 		addi	$t3, $zero, 1			# $t3 = $zero + 1
@@ -381,6 +384,10 @@ CREATEP:
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
 
+			# Get our values of x and y back 
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
 			# If this position is not free, then we don't want to shift 
 			bne		$v0, $zero, droppv	# if $v0 != $zero then droppv
 			
@@ -391,8 +398,11 @@ CREATEP:
 			# If we've run this loop 4 times we've accounted for each square
 			addi	$t8, $t8, 1			# $8 = $t8 + 1
 			addi	$t7, $zero, 4		# $t7 = $zero + 1
-			beq		$t8, $t7, moveprv		# if $t8 == $t1 then moveprv
+			beq		$t8, $t7, moveprv	# if $t8 == $t1 then moveprv
 
+			# If we're at the top row and we are here then we are free to move
+			beq		$t1, $zero, moveprv	# if $t1 == $zero then moveprv
+									
 			# Jump back to the top of our loop 
 			j		shiftprvloop			# jump to shiftprloop
 
@@ -522,10 +532,6 @@ CREATEP:
 	rotatep:
 
 	droppv:       
-
-		# Store our PX marker as it's incredibly important 
-		sw		$t0, PX		# 
-        sw      $t1, PY     # 
         
 		# Load our PX and PY value 
 		lw		$t0, PX		# 
@@ -550,11 +556,12 @@ CREATEP:
         lw      $t0, PX     # 
         lw      $t1, PY     # 
 
+        # We add 1 to PY since we're dropping some
         addi    $t1, $t1, 1            # $t1 = $t1 + 1
 		
         # If we're not done, we store our new pointer
-        sw        $t0, PX        # 
-        sw        $t1, PY        # 
+        sw      $t0, PX        # 
+        sw      $t1, PY        # 
         	
 		# Set our new value to 1 
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -567,6 +574,8 @@ CREATEP:
         lw      $t1, PY     # 
 
 		# Keep subtracting one to move up the piece unless we hit the top of the board 
+		addi	$t2, $zero, 1			# $t2 = $zero + 1
+
 		sub		$t4, $t1, $t2		# $t4 = $t1 - $t2
 		beq		$t4, $zero, ploop	# if $t4 == $zero then ploop	
 		
@@ -599,10 +608,10 @@ CREATEP:
 		# Load the original PX and PY
 		lw		$t0, PX		# 
 		lw		$t1, PY		# 
-			
+
 		# Shift our x value to the right once 
 		addi	$t2, $t0, 1			# $t0 = $t0 + 1
-		sw		$t0, PX		# 
+		sw		$t2, PX		# 
 
 		# Initialize some counters 
 		addi	$t6, $zero, 4			# $t6 = $zero + 4
@@ -612,7 +621,10 @@ CREATEP:
 		
 			# Load 1 into a register since that's what we use for this piece 
 			addi	$t3, $zero, 1			# $t3 = $zero + 1
-					
+
+			# Reload PX
+			lw		$t2, PX		# 
+			
 			# Set the value at the current position 
 			add		$a0, $zero, $t2		# $a0 = $zero + $t2
 			add		$a1, $zero, $t1		# $a1 = $zero + $t1
@@ -620,11 +632,11 @@ CREATEP:
 			jal		SETXY				# jump to SETXY
 
 			# Move our Y value back since it certainly moved
-			add		$t1, $a0, $zero		# $t1 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a0 + $zero			
 
 			# Reload X and move it to the previous spot 
 			lw		$t0, PX		# 
-			addi	$t3, $zero, 1			# $t3 = $zero + 1
+			addi	$t3, $zero, 1		# $t3 = $zero + 1
 			sub		$t0, $t0, $t3		# $t0 = $t0 - $t3
 			
 			# We want to set the spot we moved from to zero 
