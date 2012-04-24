@@ -61,7 +61,7 @@ def init_pygame():
 
 def main_loop():
     while True:
-        clock.tick(4)
+        clock.tick(8)
         data = spim.stdout.readline()
         print "data: ",data
         spim.stdout.flush()
@@ -70,19 +70,21 @@ def main_loop():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 print "goodbye"
                 return
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                print "right arrow hit"
-                tick_event = MOVE_RIGHT
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                print "left arrow hit"
-                tick_event = MOVE_LEFT
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                print "up arrow hit"
-                tick_event = ROTATE
+            if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    print "goodbye"
+                    return
+                elif event.key == pygame.K_RIGHT:
+                    print "right arrow hit"
+                    tick_event = MOVE_RIGHT
+                elif event.key == pygame.K_LEFT:
+                    print "left arrow hit"
+                    tick_event = MOVE_LEFT
+                elif event.key == pygame.K_UP:
+                    print "up arrow hit"
+                    tick_event = ROTATE
 
 
         if data == PROMPT_PIECE:
@@ -91,6 +93,7 @@ def main_loop():
 
         if data == PROMPT_TICK:
             print "ticking"
+            print "sending: " + tick_event
             spim.stdin.write(tick_event)
 
         if data == END_GAME:
