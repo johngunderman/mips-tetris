@@ -61,7 +61,7 @@ def init_pygame():
 
 def main_loop():
     while True:
-        clock.tick(1)
+        clock.tick(8)
         data = spim.stdout.readline()
         print "data: ",data
         spim.stdout.flush()
