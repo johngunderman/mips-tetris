@@ -183,20 +183,22 @@ PRINTBOARD:
 	sw		$ra, 0($sp)		# Store return address onto the stack 
 
 	j		printloop				# jump to printloop
-	
 
 	# This is actually printing the board 
 	printloop:
 		
 		jal		GETINCREMENT	# jump to GETINCREMENT and save position to $ra
 		addi	$t1, $zero, 1			# $t0 = $zero + 1
-		
-		# This is our test to see if we still have more board spaces to print
-		beq		$v1, $t1, finprint	# if $v1 == $t0 then finprint
 
+		add		$t4, $v1, $zero		# $t4 = $v1 + $zero
+		
 		add		$a0, $zero, $v0		# $a0 = $zero + $v0
 		li		$v0, 1		# system call #4 - print string
 		syscall				# execute	
+
+		# This is our test to see if we still have more board spaces to print
+		addi	$t1, $zero, 1			# $t1 = $zero + 1
+		beq		$t4, $t1, finprint	# if $v1 == $t0 then finprint
 
 		j printloop
 

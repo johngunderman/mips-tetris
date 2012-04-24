@@ -97,7 +97,7 @@ def main_loop():
             print "game ending"
             return
 
-        if len(data) == 128:
+        if len(data) == 129:
             for x in range(0,16):
                 for y in range(0,8):
                     d = data[x * 8 + y]
