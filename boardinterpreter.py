@@ -72,18 +72,19 @@ def main_loop():
             if event.type == pygame.QUIT:
                 print "goodbye"
                 return
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                print "goodbye"
-                return
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                print "right arrow hit"
-                tick_event = MOVE_RIGHT
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                print "left arrow hit"
-                tick_event = MOVE_LEFT
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                print "up arrow hit"
-                tick_event = ROTATE
+            if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    print "goodbye"
+                    return
+                elif event.key == pygame.K_RIGHT:
+                    print "right arrow hit"
+                    tick_event = MOVE_RIGHT
+                elif event.key == pygame.K_LEFT:
+                    print "left arrow hit"
+                    tick_event = MOVE_LEFT
+                elif event.key == pygame.K_UP:
+                    print "up arrow hit"
+                    tick_event = ROTATE
 
 
         if data == PROMPT_PIECE:
