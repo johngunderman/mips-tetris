@@ -792,7 +792,7 @@ CHECKBOARD:
 		add		$t0, $zero, $zero		# $t0 = $zero + $zero
 		
 		# We want to move one row above our current row and store it in another register
-		addi	$t3, $zero, 1			# $t3 = $zero + 1
+		addi	$t3, $zero, 1		# $t3 = $zero + 1
 		sub		$t2, $t1, $t3		# $t2 = $t1 - $t2
 
 
@@ -802,6 +802,10 @@ CHECKBOARD:
 			add		$a0, $zero, $t0		# $a0 = $zero + $t0
 			add		$a1, $zero, $t2		# $a1 = $zero + $t2
 			jal		GETARGXY				# jump to GETARGXY and save position to $ra
+
+			# Reset X and Y
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t2, $a1, $zero		# $t2 = $a1 + $zero
 			
 			# Call SETXY to set our new value
 			add		$a1, $zero, $t1		# $a1 = $zero + $t1
