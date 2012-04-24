@@ -61,7 +61,7 @@ def init_pygame():
 
 def main_loop():
     while True:
-        clock.tick(4)
+        clock.tick(1)
         data = spim.stdout.readline()
         print "data: ",data
         spim.stdout.flush()
@@ -70,6 +70,7 @@ def main_loop():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                print "goodbye"
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 print "goodbye"
@@ -91,6 +92,7 @@ def main_loop():
 
         if data == PROMPT_TICK:
             print "ticking"
+            print "sending: " + tick_event
             spim.stdin.write(tick_event)
 
         if data == END_GAME:
