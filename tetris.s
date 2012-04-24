@@ -537,6 +537,182 @@ CREATEP:
 
 	rotatep:
 
+		# Determine which state the piece is currently in, then rotate
+		addi	$t0, $zero, 1			# $t0 = $zero + 1
+		beq		$t9, $t0, rotatepvh	# if $t9 == $t0 then rotatepvh
+		
+		addi	$t0, $zero, 2			# $t0 = $zero + 2
+		beq		$t9, $t0, rotatephv	# if $t9 == $t0 then rotatephv
+		
+		rotatepvh:
+
+			# Load X and Y
+			lw		$t0, PX		# 
+			lw		$t1, PY		# 
+			
+			# If the whole pipe isn't being shown, we don't allow rotations
+			addi	$t2, $zero, 4		# $t2 = $zero + 4
+			blt		$t1, $t2, droppv	# if $t1 < $t2 then droopv
+
+			# If we're too far over, we won't rotate 
+			addi	$t2, $zero, 6		# $t2 = $zero + 6
+			bgt		$t0, $t2, droppv	# if $t0 > $t2 then droppv
+			
+			# If we're too close to the left edge, we drop 
+			beq		$t0, $zero, droppv	# if $t0 == $zero then droppv
+			
+			# Subtract 2 from Y to get to our pivot point 
+			addi	$t2, $zero, 2		# $t2 = $zero + 2
+			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+
+			# We subtract 1 from X to check if the space is clear
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+			
+			# We get the value at this position
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+			
+			# if this space isn't clear, we don't want to rotate 
+			bne		$v0, $zero, droppv	# if $v0 != $zero then dropv
+			
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# Add two spaces to X to check that space
+			addi	$t2, $zero, 2		# $t2 = $zero + 2
+			add		$t0, $t0, $t2		# $t0 = $t0 + $t2
+
+			# We get the value at this position
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+			
+			# if this space isn't clear, we don't want to rotate 
+			bne		$v0, $zero, droppv	# if $v0 != $zero then dropv
+			
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# Add 1 and check the final space 
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			add		$t0, $t0, $t2		# $t0 = $t0 + $t2
+
+			# We get the value at this position
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+			
+			# if this space isn't clear, we don't want to rotate 
+			bne		$v0, $zero, droppv	# if $v0 != $zero then dropv
+			
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If we make it this far, we are free to rotate
+
+			# We reload our PX and PY values
+			lw		$t0, PX		# 
+			lw		$t1, PY		# 
+			
+			# Set this value to 0 
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back 
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# Decreent from Y to move up
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+			
+			# Set this value to 0 
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back 
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# We decrement Y by 2 to get the top square
+			addi	$t2, $zero, 2			# $t2 = $zero + 2
+			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+
+			# Set this value to 0 
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back 
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# Add 1 to Y and Subtract 1 from X to get to the far left position
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			add		$t1, $t1, $t2		# $t1 = $t1 + $t2
+			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+			# Set this value to 1 
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			addi	$a2, $zero, 1			# $a2 = $zero + 1
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back 
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# Add 2 to X to get to the right position 
+			addi	$t2, $zero, 2		# $t2 = $zero + 2
+			add		$t0, $t0, $t2		# $t0 = $t0 + $t2
+
+			# Set this value to 1
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			addi	$a2, $zero, 1		# $a2 = $zero + 1
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back 
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# Add 1 to X to move to the far right position 
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			add		$t0, $t0, $t2		# $t0 = $t0 + $t2
+			
+			# Set this value to 1 
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			addi	$a2, $zero, 1		# $a2 = $zero + 1
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back 
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# We want to store the new X and Y value 
+			sw		$t0, PX		# 
+			sw		$t1, PY		# 
+
+			# Set our rotation register to indicate we are horizontal
+			addi	$t9, $zero, 2		# $t9 = $zero + 2
+			
+			j		dropph				# jump to dropph
+			
+
+		rotatephv:
+
+
 	droppv:       
         
 		# Load our PX and PY value 
@@ -608,6 +784,187 @@ CREATEP:
 		j		ploop				# jump to ploop
 			
 	dropph:
+
+		# Load our PX and PY values
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
+		
+		# Add 1 to Y to check below us
+		addi	$t1, $t1, 1			# $t1 = $t1 + 1
+		
+		# If we're at the end of the board, we're done
+		addi	$t2, $zero, 16			# $t2 = $zero + 16
+		beq		$t1, $t2, CHECKBOARD	# if $t1 == $t2 then CHECKBOARD
+		
+		# Check the value of the board at this position
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+		
+		# If there is a piece here we don't move and check the board 
+		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
+
+		# Subtract 1 from X to check the next space 
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+		# Check the value of the board at this position
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+		
+		# If there is a piece here we don't move and check the board 
+		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
+
+		# Subtract 1 from X to check the next space 
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+		# Check the value of the board at this position
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+		
+		# If there is a piece here we don't move and check the board 
+		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
+
+		# Subtract 1 from X to check the next space 
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2				
+		
+		# Check the value of the board at this position
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+		
+		# If there is a piece here we don't move and check the board 
+		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD 
+
+		# Subtract 1 from X to check the next space 
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+		# If we're at this point then we want to make the move
+
+		# We load the original X and Y 
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
+		
+		# We want to set these top four results to 0 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $zero, $zero	# $a2 = $zero + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
+
+		# Get our X and Y back 
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+		add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+		# Subtract 1 from X to move to the next positon
+		addi	$t2, $zero, 1			# $t2 = $zero + 1
+		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+		# We want to set these top four results to 0 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $zero, $zero	# $a2 = $zero + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
+
+		# Get our X and Y back 
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+		add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+		# Subtract 1 from X to move to the next positon
+		addi	$t2, $zero, 1			# $t2 = $zero + 1
+		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2		
+		
+		# We want to set these top four results to 0 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $zero, $zero	# $a2 = $zero + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
+
+		# Get our X and Y back 
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+		add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+		# Subtract 1 from X to move to the next positon
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2		
+
+		# We want to set these top four results to 0 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $zero, $zero	# $a2 = $zero + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
+
+		# Get our X and Y back 
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+		add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+		# We add 1 to Y to move to the next row
+		addi	$t1, $t1, 1			# $t1 = $t1 + 1
+		
+		# We want to set this value to 1
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $t2, $zero		# $a2 = $t2 + $zero
+	 	jal		SETXY				# jump to SETXY and save position to $ra
+
+	 	# Get X and Y back
+	 	add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+	 	add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+	 	
+	 	# Add 1 to X to set the next spot
+	 	addi	$t0, $zero, 1		# $t0 = $zero + 1
+
+	 	# We want to set this value to 1
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $t2, $zero		# $a2 = $t2 + $zero
+	 	jal		SETXY				# jump to SETXY and save position to $ra
+
+	 	# Get X and Y back
+	 	add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+	 	add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+	 	
+	 	# Add 1 to X to set the next spot
+	 	addi	$t0, $zero, 1			# $t0 = $zero + 1
+
+	 	# We want to set this value to 1
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $t2, $zero		# $a2 = $t2 + $zero
+	 	jal		SETXY				# jump to SETXY and save position to $ra
+
+	 	# Get X and Y back
+	 	add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+	 	add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+	 	
+	 	# Add 1 to X to set the next spot
+	 	addi	$t0, $zero, 1		# $t0 = $zero + 1
+
+	 	# We want to set this value to 1
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		add		$a2, $t2, $zero		# $a2 = $t2 + $zero
+	 	jal		SETXY				# jump to SETXY and save position to $ra
+
+	 	# Get X and Y back
+	 	add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+	 	add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+	 	
+	 	# We want to store our new pointers
+	 	sw		$t0, PX		# 
+	 	sw		$t1, PY		# 
+	 	
+	 	# Since we haven't hit anything we jump to ploop and wait
+	 	j		ploop				# jump to ploop
+	 	
 
 	moveprv:
 
@@ -770,7 +1127,7 @@ CHECKBOARD:
 		beq		$v0, $t3, finishcheck	# if $v0 == $t3 then finishcheck
 
 		# If our counter makes it to 8, then we have to clear this row 
-		addi	$t4, $zero, 1			# $t4 = $zero + 1
+		addi	$t4, $t4, 1			# $t4 = $t4 + 1
 		addi	$t0, $zero, 8			# $t0 = $zero + 8
 		beq		$t4, $t0, clearrow	# if $t0 4= $t0 tclearrowrget
 		
