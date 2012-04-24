@@ -330,13 +330,13 @@ CREATEP:
 		# A counter for moving pieces 
 		addi	$t8, $zero, 1			# $t8 = $zero + 1
 
-		# If Python sends us a 1 we want to shift our piece right
-		addi	$t3, $zero, 1			# $t3 = $zero + 1
-		beq		$v0, $t3, shiftpr	# if $v0 == $t3 then shiftpr
-
 		# If Python sends us a 2 we want to shift our piece left
-		addi	$t3, $zero, 2			# $t3 = $zero + 2
+		addi	$t3, $zero, 1			# $t3 = $zero + 2
 		beq		$v0, $t3, shiftpl	# if $v0 == $t3 then shiftpl
+
+		# If Python sends us a 1 we want to shift our piece right
+		addi	$t3, $zero, 2			# $t3 = $zero + 1
+		beq		$v0, $t3, shiftpr	# if $v0 == $t3 then shiftpr
 
 		# If Python sends us a 3 then we want to rotate the piece 
 		addi	$t3, $zero, 3			# $t3 = $zero + 3
@@ -596,18 +596,20 @@ CREATEP:
 
 	moveprv:
 
+		# Load the original PX and PY
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
+			
+		# Shift our x value to the right once 
+		addi	$t2, $t0, 1			# $t0 = $t0 + 1
+		sw		$t0, PX		# 
+
+		# Initialize some counters 
 		addi	$t6, $zero, 4			# $t6 = $zero + 4
 		addi	$t5, $zero, 1			# $t5 = $zero + 1
 		
 		moveprvloop:
-
-			# Load the original PX and PY
-			lw		$t0, PX		# 
-			lw		$t1, PY		# 
-			
-			# Shift our x value to the right once 
-			addi	$t2, $t0, 1			# $t0 = $t0 + 1
-	 
+		
 			# Load 1 into a register since that's what we use for this piece 
 			addi	$t3, $zero, 1			# $t3 = $zero + 1
 					
@@ -617,12 +619,24 @@ CREATEP:
 			add		$a2, $zero, $t3		# $a2 = $zero + $t3
 			jal		SETXY				# jump to SETXY
 
+			# Move our Y value back since it certainly moved
+			add		$t1, $a0, $zero		# $t1 = $a0 + $zero
+
+			# Reload X and move it to the previous spot 
+			lw		$t0, PX		# 
+			addi	$t3, $zero, 1			# $t3 = $zero + 1
+			sub		$t0, $t0, $t3		# $t0 = $t0 - $t3
+			
 			# We want to set the spot we moved from to zero 
 			add		$a0, $zero, $t0		# $a0 = $zero + $t0
 			add		$a1, $zero, $t1		# $a1 = $zero + $t1
 			add		$a2, $zero, $zero	# $a2 = $zero + $zero
 			jal		SETXY				# jump to SETXY and save position to $ra
-		
+
+			# Reset X and Y after the function call
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+					
 			# If we're at the top of the board or we're done shifting pieces we wait for the next input
 			beq		$t1, $zero, droppv	# if $t1 == $zero then droppv
 			beq		$t5, $t6, droppv	# if $t5 == $t6 then droppv
