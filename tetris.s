@@ -472,6 +472,10 @@ CREATEP:
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
 
+			# We want to get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
 			# If this position is not free, then we don't want to shift 
 			bne		$v0, $zero, droppv	# if $v0 != $zero then droppv
 
@@ -664,18 +668,20 @@ CREATEP:
 
 	moveplv:
 		
+		# Load the original PX and PY
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
+
+		# Shift our x value to the left once 
+		addi	$t3, $zero, 1			# $t3 = $zero + 1
+		sub		$t2, $t0, $t3		# $t2t = $t0 - $t3
+		sw		$t2, PX		# 
+
+		# Initialize some counters 
 		addi	$t6, $zero, 4			# $t6 = $zero + 4
 		addi	$t5, $zero, 1			# $t5 = $zero + 1
 		
 		moveplvloop:
-
-			# Load the original PX and PY
-			lw		$t0, PX		# 
-			lw		$t1, PY		# 
-			
-			# Shift our x value to the right once 
-			addi	$t3, $zero, 1		# $t3 = $zero + 1
-			sub		$t2, $t0, $t3		# $t2 = $t0 - $t3
 			
 			# Load 1 into a register since that's what we use for this piece 
 			addi	$t3, $zero, 1			# $t3 = $zero + 1
@@ -686,16 +692,26 @@ CREATEP:
 			add		$a2, $zero, $t3		# $a2 = $zero + $t3
 			jal		SETXY				# jump to SETXY
 
+			# Move our Y value back
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# Reload X and move it to the previous spot 
+			lw		$t0, PX		# 
+			addi	$t0, $t0, 1		# $t0 = $t0 + 1
+			
 			# We want to set the spot we moved from to zero 
 			add		$a0, $zero, $t0		# $a0 = $zero + $t0
 			add		$a1, $zero, $t1		# $a1 = $zero + $t1
 			add		$a2, $zero, $zero	# $a2 = $zero + $zero
 			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# We need to set our X and Y back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 		
 			# If we're at the top of the board or we're done shifting pieces we wait for the next input
 			beq		$t1, $zero, droppv	# if $t1 == $zero then droppv
 			beq		$t5, $t6, droppv	# if $t5 == $t6 then droppv
-
 
 			# We need to increase our counter and move our y-value 
 			addi	$t4, $zero, 1		# $t4 = $zero + 1
