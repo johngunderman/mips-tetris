@@ -77,10 +77,11 @@ def main_loop():
 #	    x = str(x) + "\n"
 #	    spim.stdin.write(x)
 
-	    spim.stdin.write(PIPE_PIECE)
+	    #spim.stdin.write(PIPE_PIECE)
             #spim.stdin.write(L_PIECE)
             #spim.stdin.write(SQUARE_PIECE)
             #spim.stdin.write(Z_PIECE)
+            spim.stdin.write(BZ_PIECE)
 
 
         if data == PROMPT_TICK:

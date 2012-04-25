@@ -250,7 +250,7 @@ UPDATEBOARD:
 #		beq		$t0, $t2, CREATEZ	# if $t0 == $t2 then CREATEZ
 
 		addi	$t0, $zero, 4			# $t0 = $zero + 4
-#		beq		$t0, $t2, CREATEBZ	# if $t0 == $t2 then CREATEBZ
+		beq		$t0, $t2, CREATEBZ	# if $t0 == $t2 then CREATEBZ
 
 		addi	$t0, $zero, 5			# $t0 = $zero + 5
 		beq		$t0, $t2, CREATEL	# if $t0 == $t2 then CREATEL
@@ -2293,8 +2293,503 @@ CREATEBZ:
 		# If we get here something is wrong so we wait for another input 
 		j	bzloop				# jump to bzloop
 
+rotatebz:
+		addi	$t3, $zero, 1
+		beq	$t3, $t9, rotatebzvtoh
+		j	rotatebzhtov
+		
+		rotatebzvtoh:
+			#make sure we wont go off the edge
+			addi	$t7, $zero, 6
+			bge	$t0, $t7, dropbzv
+
+			#check if botton right is clear
+			addi	$t0, $t0, 1
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to rotate 
+			bne	$v0, $zero, dropbzv	# if $v0 != $zero then dropbzv
+
+			#check if top left is clear
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, dorotatebzvtoh
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to rotate 
+			bne	$v0, $zero, dropbzv	# if $v0 != $zero then dropbzv
+
+			#check if top right is clear
+			addi	$t0, $t0, 1
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to rotate 
+			bne	$v0, $zero, dropbzv	# if $v0 != $zero then dropbzv
+
+		dorotatebzvtoh:
+			addi	$t3, $zero, 4
+
+			# Load PX and PY
+			lw	$t0, PX		# 
+			lw	$t1, PY		# 
+
+			addi	$t0, $t0, 1
+
+			#mark new squares bottom row
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#add middle row squares
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, endrotatebzvtoh
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			addi	$t0, $t0, 1
+		
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old squares in middle row
+			addi	$t0, $t0, -2
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			addi	$t0, $t0, -1
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, endrotatebzvtoh
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+		endrotatebzvtoh:
+			addi	$t9, $zero, 2
+			j	dropbzh
+
+		rotatebzhtov:
+			#make sure we wont go off the edge
+			beq	$t0, $zero, dropbzh
+
+			#check to see if middle right is empty
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, dorotatebzhtov
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to rotate 
+			bne	$v0, $zero, dropbzh	# if $v0 != $zero then dropbzh
+
+			#check to see if middle left is empty
+			addi	$t0, $t0, -1
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to rotate 
+			bne	$v0, $zero, dropbzh	# if $v0 != $zero then dropbzh
+
+			#check to see if top row is empty
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, dorotatebzhtov
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to rotate 
+			bne	$v0, $zero, dropbzh	# if $v0 != $zero then dropbzh
+
+		dorotatebzhtov:
+			addi	$t3, $zero, 4
+
+			# Load PX and PY
+			lw	$t0, PX		# 
+			lw	$t1, PY		# 
+
+			#erase bottom row
+			addi	$t0, $t0, 1
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase middle row
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, endrotatebzhtov
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			addi	$t0, $t0, 1
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#add new middle row squares
+			addi	$t0, $t0, -2
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			addi	$t0, $t0, -1
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#add new top row square
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, endrotatebzhtov
+
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+		endrotatebzhtov:
+			addi	$t9, $zero, 1
+			j	dropbzv
+
 	shiftbzl:
-	rotatebz:
+		addi	$t3, $zero, 1
+		beq	$t3, $t9, shiftbzvl
+		j	shiftbzhl
+
+		shiftbzvl:
+			addi	$t7, $zero, 1
+			beq	$t0, $t7, dropbzv
+
+			#move one to the left to check for space to move
+			addi	$t0, $t0, -1
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to shift 
+			bne	$v0, $zero, dropbzv	# if $v0 != $zero then dropbzv
+
+			#move to check to the left of the middle row
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, doshiftbzvl
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to shift 
+			bne	$v0, $zero, dropbzv	# if $v0 != $zero then droppv
+
+			#move to check to the left of the top row
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, doshiftbzvl
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to shift 
+			bne	$v0, $zero, dropbzv	# if $v0 != $zero then droppv
+
+		doshiftbzvl:
+			# Load PX and PY
+			lw	$t0, PX		# 
+			lw	$t1, PY		# 
+
+			#shift the pivot one to the left
+			addi	$t0, $t0, -1
+
+			# We want to store this value in PX since it represents the new pivot
+			sw	$t0, PX		# 
+
+			#valueto be stored for the piece
+			addi	$t3, $zero, 4
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, 1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#move block in middle line
+			addi	$t0, $t0, -2
+			addi	$t1, $t1, -1
+			
+			#check if its still on the board
+			blt	$t1, $zero, dropbzv
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, 2
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#move block in top line
+			addi	$t0, $t0, -2
+			addi	$t1, $t1, -1
+			
+			#check if its still on the board
+			blt	$t1, $zero, dropbzv
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, 1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+			
+			j	dropbzv
+
+		shiftbzhl:
+			beq	$t0, $zero, dropbzh
+
+			#move one to the left to check for space to move
+			addi	$t0, $t0, -1
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to shift 
+			bne	$v0, $zero, dropbzh	# if $v0 != $zero then dropbzh
+
+			#check to the left of the top row
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, doshiftbzhl
+		
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back 
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+		
+			# If this position is not free, then we don't want to shift 
+			bne	$v0, $zero, dropbzh	# if $v0 != $zero then dropbzh
+
+		doshiftbzhl:
+			# Load PX and PY
+			lw	$t0, PX		# 
+			lw	$t1, PY		# 
+
+			#shift the pivot one to the left
+			addi	$t0, $t0, -1
+
+			# We want to store this value in PX since it represents the new pivot
+			sw	$t0, PX		# 
+
+			#valueto be stored for the piece
+			addi	$t3, $zero, 4
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, 2
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#move block in top line
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, -1
+			
+			#check if its still on the board
+			blt	$t1, $zero, dropbzh
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, 2
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			j	dropbzh
 
 	shiftbzr:
 		addi	$t3, $zero, 1
@@ -2513,7 +3008,7 @@ CREATEBZ:
 			addi	$t1, $t1, -1
 		
 			#check if its still on the board
-			blt	$t1, $zero, dropbzv
+			blt	$t1, $zero, dropbzh
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
