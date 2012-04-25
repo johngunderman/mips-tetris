@@ -279,9 +279,6 @@ UPDATEBOARD:
 
 .globl CREATEP
 CREATEP:
-
-	# Store our return address on the stack 
-	sw		$ra, 0($sp)		# 
 	
 	# We're picking our middle position to be 3 so let's move X there
 	# We also want to make sure we're starting at our top row as well 
@@ -1280,16 +1277,10 @@ CREATEP:
 			sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
 						
 			j		moveplvloop			# jump to moveprvloop		
-			
-	finp:
-		jr		$ra					# jump to $ra
-	  
 
 # This is the procedure that is going to handle a lot of our game logic
 .globl CHECKBOARD
 CHECKBOARD:
-
-	sw		$ra, 0($sp)		# Store return address onto the stack 
 
 	# We want to check the top row of our board
 	addi	$t9, $zero, 0			# $t1 = $zero + 0
@@ -1407,6 +1398,3 @@ GAMEOVER:
 
 	li		$v0, 10			# Syscall to end program 
 	syscall
-
-	jr		$ra					# jump to $ra
-	
