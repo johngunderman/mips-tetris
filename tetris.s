@@ -1672,7 +1672,26 @@ shiftlr:
         add	$a0, $t0, $zero		# $a0 = $t0 + $zero
         add	$a1, $t1, $zero		# $a1 = $t1 + $zero
         addi	$a2, $zero, 5		# $a2 = $t2 + 1
-        jal	SETXY				# jump to SETXY and save position to $ra
+        jal	SETXY			# jump to SETXY and save position to $ra
+
+        lw      $t0, PX     #
+        lw      $t1, PY     #
+
+        ##  now let's take care of the bottom of the L
+        addi    $a0, $t0, 1
+        add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+        addi	$a2, $zero, 5		# $a2 = $t2 + 1
+        jal	SETXY			# jump to SETXY and save position to $ra
+
+        lw      $t0, PX     #
+        lw      $t1, PY     #
+
+        ## time to erase our previous bottom of the L
+        addi    $a0, $t0, 1
+        addi	$a1, $t1, -1		# $a1 = $t1 + $zero
+        addi	$a2, $zero, 0		# $a2 = $t2 + 1
+        jal	SETXY			# jump to SETXY and save position to $ra
+
 
         # Load our PX and PY value
         lw      $t0, PX     #
