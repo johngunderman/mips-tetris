@@ -357,9 +357,9 @@ CREATEP:
 
 	shiftpr:
 
-        # If we're moving past the end of the board we don't want to move
-        addi    $t7, $zero, 7       # $t7 = $zero + 8
-        beq     $t0, $t7, droppv    # if $t0 == $t7 then droppv
+		# Load our X and Y values
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
 
 		# We add one to our PX-value for testing purposes 
 		addi	$t0, $t0, 1			# $t0 = $t0 + 1
@@ -380,6 +380,10 @@ CREATEP:
 		
 
 		shiftprvloop:
+
+			# If we're moving past the end of the board we don't want to move
+      	  	addi    $t7, $zero, 8       # $t7 = $zero + 8
+       		beq     $t0, $t7, droppv    # if $t0 == $t7 then droppv
 
 			# Get the value stored at PX,PY
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -410,22 +414,34 @@ CREATEP:
 
 		shiftprhloop:
 
+			# If we're moving past the end of the board we don't want to move
+      	  	addi    $t7, $zero, 8       # $t7 = $zero + 8
+       		beq     $t0, $t7, dropph    # if $t0 == $t7 then dropph
+
 			# Get the value stored at PX,PY
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 			
 			# If this position is not free, then we don't want to shift
-			bne		$t0, $zero, dropph	# if $t0 != $zero then dropph
+			bne		$v0, $zero, dropph	# if $t0 != $zero then dropph
 			
 			# Store a 1 in a register since we'll need it 
-			addi	$t3, $zero, 1			# $t3 = $zero + 1
+			addi	$t3, $zero, 1		# $t3 = $zero + 1
 
 			# If the spot is free we want to shift there 
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add		$a2, $t3, $zero		# $a2 = $t3 + $zero
+			addi	$a2, $zero, 1		# $a2 = $zero + 1
 			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 			
 			# We want to store the new value of PX
 			sw		$t0, PX		# 
@@ -440,6 +456,7 @@ CREATEP:
 			add		$a0, $t4, $zero		# $a0 = $t4 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t4 + $zero
 			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
 
 			# We're done so let's drop our piece 
 			j		dropph				# jump to ploop
@@ -447,9 +464,10 @@ CREATEP:
 			
 	shiftpl:
 
-		# If we're in the first column we don't even want to bother shifting 
-		beq		$t0, $zero, droppv	# if $t0 == $zero then droppv
-
+		# Load our X and Y values 
+		lw		$t0, PX		# 
+		lw		$t1, PY		# 
+		
 		# We subtract 1 from our PX value for testing purposes 
 		addi	$t6, $zero, 1		# $t6 = $zero + 1
 		sub		$t0, $t0, $t6		# $t0 = $t0 - $t6
@@ -466,6 +484,9 @@ CREATEP:
 		j		droppv				# jump to droppv
 
 		shiftplvloop:
+
+			# If we're in the first column we don't even want to bother shifting 
+			blt		$t0, $zero, droppv	# if $t0 == $zero then droppv
 
 			# Get the value stored at PX,PY
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -501,18 +522,25 @@ CREATEP:
 			
 			# Since we subtracted one at the top, I'm in position 
 			# 3 in relation to the pivot. I need to get to 0
+			# We stop to check if we're in the first column or not
 			sub		$t4, $t0, $t3		# $t4 = $t0 - $t3
 			sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+
+			# If we're in the first column we don't even want to bother shifting 
+			beq		$t4, $zero, dropph	# if $t0 == $zero then droppv
 			sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
-			
 			
 			# Get the value stored at PX,PY
 			add		$a0, $t4, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our X and Y back
+			add		$t4, $a0, $zero		# $t4 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 			
 			# If this position is not free, then we don't want to shift
-			bne		$t0, $zero, dropph	# if $t0 != $zero then dropph
+			bne		$v0, $zero, dropph	# if $t0 != $zero then dropph
 
 			# If the spot is free we want to shift there 
 			add		$a0, $t4, $zero		# $a0 = $t0 + $zero
@@ -520,17 +548,25 @@ CREATEP:
 			add		$a2, $t3, $zero		# $a2 = $t3 + $zero
 			jal		SETXY				# jump to SETXY and save position to $ra
 
-			# We want to store this value in PX since it represents the new pivot
+			# We want our X and Y back
+			add		$t4, $a0, $zero		# $t4 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# We want to shift our X pivot to the left one 
+			lw		$t0, PX		# 
+			addi	$t2, $zero, 1			# $t2 = $zero + 1
+			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
 			sw		$t0, PX		# 
 			
 			# Since we subtracted once before coming here
 			# We want to add 1 to get back to the space to set 0 
-			add		$t0, $t0, $t3		# $t0 = $t0 + $t3
-			
+			addi	$t0, $t0, 1			# $t0 = $t0 + 1
+									
 			# Set this piece to 0 since we moved past the space
 			add		$a0, $t0, $zero		# $a0 = $t4 + $zero
-			add		$a1, $t4, $zero		# $a1 = $t4 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t4 + $zero
 			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
 
 			# We're done so let's drop the piece 
 			j		dropph				# jump to dropph
@@ -555,7 +591,7 @@ CREATEP:
 			blt		$t1, $t2, droppv	# if $t1 < $t2 then droopv
 
 			# If we're too far over, we won't rotate 
-			addi	$t2, $zero, 6		# $t2 = $zero + 6
+			addi	$t2, $zero, 5		# $t2 = $zero + 6
 			bgt		$t0, $t2, droppv	# if $t0 > $t2 then droppv
 			
 			# If we're too close to the left edge, we drop 
@@ -688,7 +724,7 @@ CREATEP:
 
 			# Add 1 to X to move to the far right position 
 			addi	$t2, $zero, 1		# $t2 = $zero + 1
-			add		$t0, $t0, $t2		# $t0 = $t0 + $t2
+			add		$t0, $t0, $t2		# $t0 = $t0 + $t2			
 			
 			# Set this value to 1 
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -703,7 +739,7 @@ CREATEP:
 			# We want to store the new X and Y value 
 			sw		$t0, PX		# 
 			sw		$t1, PY		# 
-
+			
 			# Set our rotation register to indicate we are horizontal
 			addi	$t9, $zero, 2		# $t9 = $zero + 2
 			
@@ -712,7 +748,160 @@ CREATEP:
 
 		rotatephv:
 
+			# Load X and Y
+			lw		$t0, PX		# 
+			lw		$t1, PY		# 
+			
+			# If Y is 0 then we don't allow rotation
+			beq		$t1, $zero, dropph	# if $t1 == $zero then dropph
+			
+			# Subtract 2 from X to get the right pivot position 
+			addi	$t2, $zero, 2		# $t2 = $zero + 2
+			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
 
+			# Subtract 1 from Y to shift up a block 
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+			
+			# Get the value stored here
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# If this spot is not free do not allow a rotation 
+			bne		$v0, $zero, dropph	# if $v0 != $zero then dropph
+
+			# Add 2 to Y to get the next position to check 
+			addi	$t2, $zero, 2		# $t2 = $zero + 2
+			add		$t1, $t1, $t2		# $t1 = $t1 + $t2
+
+			# Get the value stored here
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# If this spot is not free do not allow a rotation 
+			bne		$v0, $zero, dropph	# if $v0 != $zero then dropph
+
+			# Add 1 to Y to get the last spot to check 
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			add		$t1, $t1, $t2		# $t1 = $t1 + $t2
+
+			# Get the value stored here
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our X and Y values back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# If this spot is not free do not allow a rotation 
+			bne		$v0, $zero, dropph	# if $v0 != $zero then dropph
+			
+			# If we make it to this point then we are free to rotate 
+
+			# Load our original X and Y values
+			lw		$t0, PX		# 
+			lw		$t1, PY		# 
+			
+			# Set this value to 0
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# Subtract 1 from X to get the square
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+			# Set this value to 0
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero	
+
+			# Subtract 2 from X to get the far left square
+			addi	$t2, $zero, 2		# $t2 = $zero + 2
+			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+			# Set this value to 0
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add		$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
+
+			# Get our X and Y back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero	
+
+			# Add one 1 X to get back to pivot point and subtract 1 from Y to get the top square
+			addi	$t0, $t0, 1			# $t0 = $t0 + 1
+			addi	$t2, $zero, 1		# $t2 = $zero + 1
+			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+
+			# Set this value to 1
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			addi	$a2, $zero, 1		# $a2 = $zero + 1
+			jal		SETXY				# jump to SETXY and save position to $ra
+			
+			# Get our X and Y back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+			
+			# Add 2 to Y to drop it below the pivot
+			addi	$t1, $t1, 2			# $t1 = $t1 + 2
+			
+			# Set this value to 1
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			addi	$a2, $zero, 1		# $a2 = $zero + 1
+			jal		SETXY				# jump to SETXY and save position to $ra
+			
+			# Get our X and Y back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# Add 1 to Y to get to the last square
+			addi	$t1, $t1, 1			# $t1 = $t1 + 1
+
+			# Set this value to 1
+			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+			addi	$a2, $zero, 1		# $a2 = $zero + 1
+			jal		SETXY				# jump to SETXY and save position to $ra
+			
+			# Get our X and Y back
+			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# Store our new pivot
+			sw		$t0, PX		# 
+			sw		$t1, PY		# 
+			
+			# Set out rotation value to 1
+			addi	$t9, $zero, 1			# $t9 = $zero + 1
+			
+			# Jump back to ploop
+			j		ploop				# jump to ploop
+			
 	droppv:       
         
 		# Load our PX and PY value 
@@ -799,7 +988,11 @@ CREATEP:
 		# Check the value of the board at this position
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
-		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+		jal		GETARGXY			# jump to GETARGXY and save position to $read
+
+		# Get our X and Y values back
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero	
+		add		$t1, $a1, $zero		# $t1 = $a + $t2
 		
 		# If there is a piece here we don't move and check the board 
 		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
@@ -812,6 +1005,10 @@ CREATEP:
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+		# Get our X and Y values back
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero	
+		add		$t1, $a1, $zero		# $t1 = $a + $t2
 		
 		# If there is a piece here we don't move and check the board 
 		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
@@ -824,6 +1021,10 @@ CREATEP:
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+		# Get our X and Y values back
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero	
+		add		$t1, $a1, $zero		# $t1 = $a + $t2
 		
 		# If there is a piece here we don't move and check the board 
 		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
@@ -836,13 +1037,13 @@ CREATEP:
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+		# Get our X and Y values back
+		add		$t0, $a0, $zero		# $t0 = $a0 + $zero	
+		add		$t1, $a1, $zero		# $t1 = $a + $t2
 		
 		# If there is a piece here we don't move and check the board 
 		bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD 
-
-		# Subtract 1 from X to check the next space 
-		addi	$t2, $zero, 1		# $t2 = $zero + 1
-		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
 
 		# If we're at this point then we want to make the move
 
@@ -861,7 +1062,7 @@ CREATEP:
 		add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 		
 		# Subtract 1 from X to move to the next positon
-		addi	$t2, $zero, 1			# $t2 = $zero + 1
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
 		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
 
 		# We want to set these top four results to 0 
@@ -875,7 +1076,7 @@ CREATEP:
 		add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 		
 		# Subtract 1 from X to move to the next positon
-		addi	$t2, $zero, 1			# $t2 = $zero + 1
+		addi	$t2, $zero, 1		# $t2 = $zero + 1
 		sub		$t0, $t0, $t2		# $t0 = $t0 - $t2		
 		
 		# We want to set these top four results to 0 
@@ -917,7 +1118,7 @@ CREATEP:
 	 	add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 	 	
 	 	# Add 1 to X to set the next spot
-	 	addi	$t0, $zero, 1		# $t0 = $zero + 1
+	 	addi	$t0, $t0, 1		# $t0 = $zero + 1
 
 	 	# We want to set this value to 1
 		addi	$t2, $zero, 1		# $t2 = $zero + 1
@@ -931,7 +1132,7 @@ CREATEP:
 	 	add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 	 	
 	 	# Add 1 to X to set the next spot
-	 	addi	$t0, $zero, 1			# $t0 = $zero + 1
+	 	addi	$t0, $t0, 1		# $t0 = $zero + 1
 
 	 	# We want to set this value to 1
 		addi	$t2, $zero, 1		# $t2 = $zero + 1
@@ -945,7 +1146,7 @@ CREATEP:
 	 	add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 	 	
 	 	# Add 1 to X to set the next spot
-	 	addi	$t0, $zero, 1		# $t0 = $zero + 1
+	 	addi	$t0, $t0, 1		# $t0 = $zero + 1
 
 	 	# We want to set this value to 1
 		addi	$t2, $zero, 1		# $t2 = $zero + 1
@@ -961,6 +1162,9 @@ CREATEP:
 	 	# We want to store our new pointers
 	 	sw		$t0, PX		# 
 	 	sw		$t1, PY		# 
+
+	 	jal		PRINTBOARD				# jump to PRINTBOARD and save position to $ra
+	 	
 	 	
 	 	# Since we haven't hit anything we jump to ploop and wait
 	 	j		ploop				# jump to ploop

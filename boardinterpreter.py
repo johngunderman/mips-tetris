@@ -107,6 +107,8 @@ def main_loop():
                         display_block(x,y, BLACK)
                     if d == "1":
                         display_block(x,y, RED)
+                    if d == "2":
+                        display_block(x,y, BLUE)
 
         pygame.display.update()
 
