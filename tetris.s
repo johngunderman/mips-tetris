@@ -2172,19 +2172,19 @@ CREATES:
 		add		$a2, $zero, $zero	# $a2 = $zero + $zero
 		jal		SETXY				# jump to SETXY and save position to $ra
 
-		#move to x-1
+		#move to x-1,y
 		add		$t0, $a0, $zero
 		add		$t1, $a1, $zero
 		addi	$t0, $t0, -1		# $t0 = $t0 - 2
 		sw		$t0, PX
 
-		#set x-1 to 2
+		#set x-1,y to 2
 		add		$a0, $zero, $t0		# $a0 = $zero + $t2
 		add		$a1, $zero, $t1		# $a1 = $zero + $t1
 		add		$a2, $zero, $t2		# $a2 = $zero + $t3
 		jal		SETXY				# jump to SETXY
 
-		#move up a row, y-1
+		#move up a row, x-1,y-1
 		add		$t0, $a0, $zero
 		add		$t1, $a1, $zero
 		addi	$t1, $t1, -1		# $t0 = $t0 - 2
@@ -2195,12 +2195,12 @@ CREATES:
 		add		$a2, $zero, $t2		# $a2 = $zero + $t3
 		jal		SETXY				# jump to SETXY
 
-		#top right square, x
+		#top right square, x,y-1
 		add		$t0, $a0, $zero
 		add		$t1, $a1, $zero
 		addi	$t0, $t0, 1		# $t0 = $t0 - 2
 
-		#set to 2
+		#set to 0
 		add		$a0, $zero, $t0		# $a0 = $zero + $t2
 		add		$a1, $zero, $t1		# $a1 = $zero + $t1
 		add		$a2, $zero, $zero	# $a2 = $zero + $t3

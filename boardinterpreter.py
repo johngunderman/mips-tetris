@@ -73,7 +73,11 @@ def main_loop():
 
         if data == PROMPT_PIECE:
             print "prompted for piece"
-            spim.stdin.write(PIPE_PIECE)
+#	    x =  random.randint(1,2)
+#	    x = str(x) + "\n"
+#	    spim.stdin.write(x)
+
+	    spim.stdin.write(PIPE_PIECE)
             #spim.stdin.write(L_PIECE)
             #spim.stdin.write(SQUARE_PIECE)
             #spim.stdin.write(Z_PIECE)
