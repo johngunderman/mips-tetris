@@ -254,7 +254,7 @@ UPDATEBOARD:
 #		beq		$t0, $t2, CREATEBZ	# if $t0 == $t2 then CREATEBZ
 
                 addi	$t0, $zero, 5			# $t0 = $zero + 5
-#		beq		$t0, $t2, CREATEL	# if $t0 == $t2 then CREATEL
+		beq		$t0, $t2, CREATEL	# if $t0 == $t2 then CREATEL
 
                 addi	$t0, $zero, 6			# $t0 = $zero + 6
 #		beq		$t0, $t2, CREATEBL	# if $t0 == $t2 then CREATEBL
@@ -722,6 +722,462 @@ CREATEP:
 
         finp:
                 jr		$ra					# jump to $ra
+
+
+
+
+.globl CREATEL
+CREATEL:
+        # Store our return address on the stack
+        sw		$ra, 0($sp)		#
+
+        # We're picking our middle position to be 3 so let's move X there
+        # We also want to make sure we're starting at our top row as well
+        addi	$t0, $zero, 3			# $t0 = X + 3
+        addi	$t1, $zero, 0			# $t1 = $zero + 0
+
+        # Store the value for safe keeping
+        sw      $t0, PX        #
+        sw      $t1, PY        #
+
+        # Store the first position of the board
+        addi	$t2, $zero, 5		# $t1 = $zero + 1
+        add		$a0, $zero, $t0		# $a0 = $zero + $t0
+        add		$a1, $zero, $t1		# $a1 = $tzero+ $t1
+        add		$a2, $zero, $t2		# $a2 = $zero + $t2
+        jal		SETXY				# jump to SETXY and save position to $ra
+
+        # $t9 holds the rotation state. 1 for vertical, 2 for horizontal
+        ##  for this piece (the L), we'll need two more values:
+        ## 3 for upside down, and 4 for horizontal in the opposite directon
+        ## I'll probably implement this as a clock face moving widdershins,
+        ## where 1 is 6, 2 is 3, 3 is 12, and 4 is 9.
+        ##
+        ## obviously we start in a vertical state
+        addi	$t9, $zero, 1			# $t7 = $zero + 1
+
+        ## start our loop for the L piece
+        j lloop
+
+lloop:
+        ## print out our board
+        jal PRINTBOARD
+
+        # Prompt for user input from Python
+        li        $a0, 1        # $a0 = 1
+        li        $v0, 1        # $v0 = 1
+        syscall
+
+        # Print a new line
+        li      $v0, 4      # system call #4 - print string
+        la      $a0, newline    # $a0 = $zero + 15
+        syscall             # execute
+
+                        # Make MIPS wait for integer input
+        li		$v0, 5		# $v0 = 5
+        syscall				# execute
+
+        # Load PX and PY
+        lw		$t0, PX		#
+        lw		$t1, PY		#
+
+        # A counter for moving pieces
+        addi	$t8, $zero, 1			# $t8 = $zero + 1
+
+        # If Python sends us a 2 we want to shift our piece left
+        addi	$t3, $zero, 1			# $t3 = $zero + 2
+        beq	$v0, $t3, shiftll	# if $v0 == $t3 then shiftll
+
+        # If Python sends us a 1 we want to shift our piece right
+        addi	$t3, $zero, 2			# $t3 = $zero + 1
+        beq	$v0, $t3, shiftlr	# if $v0 == $t3 then shiftlr
+
+        # If Python sends us a 3 then we want to rotate the piece
+        addi	$t3, $zero, 3			# $t3 = $zero + 3
+        beq	$v0, $t3, rotatel	# if $v0 == $t3 then target
+
+        # If our piece is in position 1 then drop vertical
+        addi	$t3, $zero, 1			# $t3 = $zero + 1
+        beq	$t9, $t3, droplv	# if $t9 == $t3 then droplv
+
+        # If our piece is in position 2 then drop horizontal
+        addi	$t3, $zero, 2			# $t3 = $zero + 2
+        beq	$t9, $t3, droplh	# if $t9 == $t3 then droplh
+
+        # If we get here something is wrong so we wait for another input
+        j		lloop				# jump to lloop
+
+shiftlr:
+
+        # If we're moving past the end of the board we don't want to move
+        addi    $t7, $zero, 7       # $t7 = $zero + 8
+        beq     $t0, $t7, droplv    # if $t0 == $t7 then droplv
+
+                # We add one to our PX-value for testing purposes
+                addi	$t0, $t0, 1			# $t0 = $t0 + 1
+
+                # We need a counter initialized for looping purposes
+                addi	$t8, $zero, 1			# $t8 = $zero + 1
+
+                # If $t9 == 1 then the pipe is vertical so move to that loop
+                addi	$t3, $zero, 1			# $t3 = $zero + 1
+                beq		$t9, $t3, shiftlrvloop	# if $t9 == $t3 then shiftlrvloop
+
+                # If $t9 == 0 then the pipe is horizontal so move to that loop
+                addi	$t3, $zero, 2			# $t3 = $zero + 2
+                beq		$t9, $t3, shiftlrhloop	# if $t9 == $t3 then shiftlrhloop
+
+                # If we don't hit one of these then something went wrong and it's best to change anything
+                j		lloop				# jump to lloop
+
+
+                shiftlrvloop:
+
+                        # Get the value stored at PX,PY
+                        add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+                        add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                        jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+                        # Get our values of x and y back
+                        add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+                        add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+                        # If this position is not free, then we don't want to shift
+                        bne		$v0, $zero, droplv	# if $v0 != $zero then droplv
+
+                        # Subtract 1 from y to move up
+                        addi	$t7, $zero, 1		# $t7 = $zero + 1
+                        sub		$t1, $t1, $t7		# $t1 = $t1 - $t7
+
+                        # If we've run this loop 4 times we've accounted for each square
+                        addi	$t8, $t8, 1			# $8 = $t8 + 1
+                        addi	$t7, $zero, 4		# $t7 = $zero + 1
+                        beq		$t8, $t7, movelrv	# if $t8 == $t1 then movelrv
+
+                        # If we're at the top row and we are here then we are free to move
+                        beq		$t1, $zero, movelrv	# if $t1 == $zero then movelrv
+
+                        # Jump back to the top of our loop
+                        j		shiftlrvloop			# jump to shiftlrloop
+
+                shiftlrhloop:
+
+                        # Get the value stored at PX,PY
+                        add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+                        add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                        jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+                        # If this position is not free, then we don't want to shift
+                        bne		$t0, $zero, droplh	# if $t0 != $zero then droplh
+
+                        # Store a 1 in a register since we'll need it
+                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+
+                        # If the spot is free we want to shift there
+                        add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+                        add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                        add		$a2, $t3, $zero		# $a2 = $t3 + $zero
+                        jal		SETXY				# jump to SETXY and save position to $ra
+
+                        # We want to store the new value of PX
+                        sw		$t0, PX		#
+
+                        # We now want to subtract to the beginning of the pipe
+                        sub		$t4, $t0, $t3		# $t4 = $t4 - $t3
+                        sub		$t4, $t4, $t3		# $t4 = $t4- $t3
+                        sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+                        sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+
+                        # Set this piece to 0 since we moved past the space
+                        add		$a0, $t4, $zero		# $a0 = $t4 + $zero
+                        add		$a1, $t1, $zero		# $a1 = $t4 + $zero
+                        add		$a2, $zero, $zero	# $a2 = $zero + $zero
+
+                        # We're done so let's drop our piece
+                        j		droplh				# jump to lloop
+
+
+        shiftpl:
+
+                # If we're in the first column we don't even want to bother shifting
+                beq		$t0, $zero, droplv	# if $t0 == $zero then droplv
+
+                # We subtract 1 from our PX value for testing purposes
+                addi	$t6, $zero, 1		# $t6 = $zero + 1
+                sub		$t0, $t0, $t6		# $t0 = $t0 - $t6
+
+                # If $t9 == 1 then the pipe is vertical so move to that loop
+                addi	$t3, $zero, 1			# $t3 = $zero + 1
+                beq		$t9, $t3, shiftllvloop	# if $t9 == $t3 then shiftlrvloop
+
+                # If $t9 == 0 then the pipe is horizontal so move to that loop
+                addi	$t3, $zero, 2			# $t3 = $zero + 2
+                beq		$t9, $t3, shiftllhloop	# if $t9 == $t3 then shiftlrhloop
+
+                # If we don't hit one of these then something went wrong and it's best to change anything
+                j		droplv				# jump to droplv
+
+                shiftllvloop:
+
+                        # Get the value stored at PX,PY
+                        add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+                        add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                        jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+                        # We want to get our X and Y values back
+                        add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+                        add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+                        # If this position is not free, then we don't want to shift
+                        bne		$v0, $zero, droplv	# if $v0 != $zero then droplv
+
+                        # If PY is 0 then we are at the top so we can move
+                        beq		$t1, $zero, movellv	# if $t1 == $zero then movelrv
+
+                        # Subtract 1 from y to move up
+                        addi	$t7, $zero, 1		# $t7 = $zero + 1
+                        sub		$t1, $t1, $t7		# $t1 = $t1 - $t7
+
+                        # If we've run this loop 4 times we've accounted for each square
+                        addi	$t8, $t8, 1			# $8 = $t8 + 1
+                        addi	$t7, $zero, 4		# $t7 = $zero + 1
+                        beq		$t8, $t7, movellv		# if $t8 == $t1 then movelrv
+
+                        # Jump back to the top of our loop
+                        j		shiftllvloop			# jump to shiftlrloop
+
+                shiftllhloop:
+
+                        # We will need this later
+                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+
+                        # Since we subtracted one at the top, I'm in position
+                        # 3 in relation to the pivot. I need to get to 0
+                        sub		$t4, $t0, $t3		# $t4 = $t0 - $t3
+                        sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+                        sub		$t4, $t4, $t3		# $t4 = $t4 - $t3
+
+
+                        # Get the value stored at PX,PY
+                        add		$a0, $t4, $zero		# $a0 = $t0 + $zero
+                        add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                        jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+                        # If this position is not free, then we don't want to shift
+                        bne		$t0, $zero, droplh	# if $t0 != $zero then droplh
+
+                        # If the spot is free we want to shift there
+                        add		$a0, $t4, $zero		# $a0 = $t0 + $zero
+                        add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                        add		$a2, $t3, $zero		# $a2 = $t3 + $zero
+                        jal		SETXY				# jump to SETXY and save position to $ra
+
+                        # We want to store this value in PX since it represents the new pivot
+                        sw		$t0, PX		#
+
+                        # Since we subtracted once before coming here
+                        # We want to add 1 to get back to the space to set 0
+                        add		$t0, $t0, $t3		# $t0 = $t0 + $t3
+
+                        # Set this piece to 0 since we moved past the space
+                        add		$a0, $t0, $zero		# $a0 = $t4 + $zero
+                        add		$a1, $t4, $zero		# $a1 = $t4 + $zero
+                        add		$a2, $zero, $zero	# $a2 = $zero + $zero
+
+                        # We're done so let's drop the piece
+                        j		droplh				# jump to droplh
+
+        rotatel:
+
+        droplv:
+
+                # Load our PX and PY value
+                lw		$t0, PX		#
+                lw		$t1, PY		#
+
+                # We add 1 to look at the square below ours
+                addi	$t1, $t1, 1		# $t2 = $zero + 1
+
+        # Check to make sure we haven't gone to the end of the board
+        addi    $t4, $zero, 16           # $t4 = $zero + 16
+        beq     $t1, $t4, CHECKBOARD    # if $t1 == $t4 then UPDATEBOARD
+
+                # Check what value is stored at this location
+                add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+                add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+        # If the space isn't empty, we're done so check the board
+        bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+
+        # Load our PX and PY value
+        lw      $t0, PX     #
+        lw      $t1, PY     #
+
+        # We add 1 to PY since we're dropping some
+        addi    $t1, $t1, 1            # $t1 = $t1 + 1
+
+        # If we're not done, we store our new pointer
+        sw      $t0, PX        #
+        sw      $t1, PY        #
+
+                # Set our new value to 1
+                add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+                add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+                addi	$a2, $zero, 1		# $a2 = $t2 + 1
+                jal		SETXY				# jump to SETXY and save position to $ra
+
+        # Load our PX and PY value
+        lw      $t0, PX     #
+        lw      $t1, PY     #
+
+                # Keep subtracting one to move up the piece unless we hit the top of the board
+                addi	$t2, $zero, 1			# $t2 = $zero + 1
+
+                sub		$t4, $t1, $t2		# $t4 = $t1 - $t2
+                beq		$t4, $zero, lloop	# if $t4 == $zero then lloop
+
+                sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
+                beq		$t4, $zero, lloop	# if $t4 == $zero then lloop
+
+                sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
+                beq		$t4, $zero, lloop	# if $t4 == $zero then lloop
+
+                sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
+
+                # Set this value to 0 since we dropped below it
+                add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+                add		$a1, $t4, $zero		# $a1 = $t4 + $zero
+                add		$a2, $zero, $zero	# $a2 = $zero + $zero
+                jal		SETXY				# jump to SETXY and save position to $ra
+
+        beq     $t4, $zero, lloop   # if $t4 == $zero then lloop
+
+        # After we drop, we print
+        jal     PRINTBOARD       # jump to PRINTBOARD and save position to $ra
+
+                # If we make it this far then we are mid drop so we want more input
+                j		lloop				# jump to ploop
+
+        droplh:
+
+        movelrv:
+
+                # Load the original PX and PY
+                lw		$t0, PX		#
+                lw		$t1, PY		#
+
+                # Shift our x value to the right once
+                addi	$t2, $t0, 1			# $t0 = $t0 + 1
+                sw		$t2, PX		#
+
+                # Initialize some counters
+                addi	$t6, $zero, 4			# $t6 = $zero + 4
+                addi	$t5, $zero, 1			# $t5 = $zero + 1
+
+                movelrvloop:
+
+                        # Load 1 into a register since that's what we use for this piece
+                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+
+                        # Reload PX
+                        lw		$t2, PX		#
+
+                        # Set the value at the current position
+                        add		$a0, $zero, $t2		# $a0 = $zero + $t2
+                        add		$a1, $zero, $t1		# $a1 = $zero + $t1
+                        add		$a2, $zero, $t3		# $a2 = $zero + $t3
+                        jal		SETXY				# jump to SETXY
+
+                        # Move our Y value back since it certainly moved
+                        add		$t1, $a1, $zero		# $t1 = $a0 + $zero
+
+                        # Reload X and move it to the previous spot
+                        lw		$t0, PX		#
+                        addi	$t3, $zero, 1		# $t3 = $zero + 1
+                        sub		$t0, $t0, $t3		# $t0 = $t0 - $t3
+
+                        # We want to set the spot we moved from to zero
+                        add		$a0, $zero, $t0		# $a0 = $zero + $t0
+                        add		$a1, $zero, $t1		# $a1 = $zero + $t1
+                        add		$a2, $zero, $zero	# $a2 = $zero + $zero
+                        jal		SETXY				# jump to SETXY and save position to $ra
+
+                        # Reset X and Y after the function call
+                        add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+                        add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+                        # If we're at the top of the board or we're done shifting pieces we wait for the next input
+                        beq		$t1, $zero, droplv	# if $t1 == $zero then droplv
+                        beq		$t5, $t6, droplv	# if $t5 == $t6 then droplv
+
+                        # We need to increase our counter and move our y-value
+                        addi	$t4, $zero, 1		# $t4 = $zero + 1
+                        add		$t5, $t5, $t4		# $t5 = $t5 + $t4
+                        sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
+
+                        j		movelrvloop			# jump to movelrvloop
+
+        movellv:
+
+                # Load the original PX and PY
+                lw		$t0, PX		#
+                lw		$t1, PY		#
+
+                # Shift our x value to the left once
+                addi	$t3, $zero, 1			# $t3 = $zero + 1
+                sub		$t2, $t0, $t3		# $t2t = $t0 - $t3
+                sw		$t2, PX		#
+
+                # Initialize some counters
+                addi	$t6, $zero, 4			# $t6 = $zero + 4
+                addi	$t5, $zero, 1			# $t5 = $zero + 1
+
+                movellvloop:
+
+                        # Load 1 into a register since that's what we use for this piece
+                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+
+                        # Set the value at the current position
+                        add		$a0, $zero, $t2		# $a0 = $zero + $t2
+                        add		$a1, $zero, $t1		# $a1 = $zero + $t1
+                        add		$a2, $zero, $t3		# $a2 = $zero + $t3
+                        jal		SETXY				# jump to SETXY
+
+                        # Move our Y value back
+                        add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+                        # Reload X and move it to the previous spot
+                        lw		$t0, PX		#
+                        addi	$t0, $t0, 1		# $t0 = $t0 + 1
+
+                        # We want to set the spot we moved from to zero
+                        add		$a0, $zero, $t0		# $a0 = $zero + $t0
+                        add		$a1, $zero, $t1		# $a1 = $zero + $t1
+                        add		$a2, $zero, $zero	# $a2 = $zero + $zero
+                        jal		SETXY				# jump to SETXY and save position to $ra
+
+                        # We need to set our X and Y back
+                        add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+                        add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+                        # If we're at the top of the board or we're done shifting pieces we wait for the next input
+                        beq		$t1, $zero, droplv	# if $t1 == $zero then droplv
+                        beq		$t5, $t6, droplv	# if $t5 == $t6 then droplv
+
+                        # We need to increase our counter and move our y-value
+                        addi	$t4, $zero, 1		# $t4 = $zero + 1
+                        add		$t5, $t5, $t4		# $t5 = $t5 + $t4
+                        sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
+
+                        j		movellvloop			# jump to movelrvloop
+
+        finl:
+                jr		$ra					# jump to $ra
+
+###############################################
+        ## PROGRESS MARKER FOR JOHN
+### ##########################################
 
 
 # This is the procedure that is going to handle a lot of our game logic
