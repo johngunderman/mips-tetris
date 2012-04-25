@@ -747,6 +747,14 @@ CREATEL:
         add		$a2, $zero, $t2		# $a2 = $zero + $t2
         jal		SETXY				# jump to SETXY and save position to $ra
 
+        lw      $t0, PX        #
+        lw      $t1, PY        #
+
+        addi		$a0, $t0, 1		# $a0 = $zero + $t0
+        add		$a1, $zero, $t1		# $a1 = $tzero+ $t1
+        add		$a2, $zero, $t2		# $a2 = $zero + $t2
+        jal		SETXY				# jump to SETXY and save position to $ra
+
         # $t9 holds the rotation state. 1 for vertical, 2 for horizontal
         ##  for this piece (the L), we'll need two more values:
         ## 3 for upside down, and 4 for horizontal in the opposite directon
@@ -871,7 +879,7 @@ shiftlr:
                         bne		$t0, $zero, droplh	# if $t0 != $zero then droplh
 
                         # Store a 1 in a register since we'll need it
-                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+                        addi	$t3, $zero, 5			# $t3 = $zero + 1
 
                         # If the spot is free we want to shift there
                         add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -897,7 +905,7 @@ shiftlr:
                         j		droplh				# jump to lloop
 
 
-        shiftpl:
+        shiftll:
 
                 # If we're in the first column we don't even want to bother shifting
                 beq		$t0, $zero, droplv	# if $t0 == $zero then droplv
@@ -949,7 +957,7 @@ shiftlr:
                 shiftllhloop:
 
                         # We will need this later
-                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+                        addi	$t3, $zero, 5			# $t3 = $zero + 1
 
                         # Since we subtracted one at the top, I'm in position
                         # 3 in relation to the pivot. I need to get to 0
@@ -998,9 +1006,9 @@ shiftlr:
                 # We add 1 to look at the square below ours
                 addi	$t1, $t1, 1		# $t2 = $zero + 1
 
-        # Check to make sure we haven't gone to the end of the board
-        addi    $t4, $zero, 16           # $t4 = $zero + 16
-        beq     $t1, $t4, CHECKBOARD    # if $t1 == $t4 then UPDATEBOARD
+                # Check to make sure we haven't gone to the end of the board
+                addi    $t4, $zero, 16           # $t4 = $zero + 16
+                beq     $t1, $t4, CHECKBOARD    # if $t1 == $t4 then UPDATEBOARD
 
                 # Check what value is stored at this location
                 add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -1022,34 +1030,34 @@ shiftlr:
         sw      $t1, PY        #
 
                 # Set our new value to 1
-                add		$a0, $t0, $zero		# $a0 = $t0 + $zero
-                add		$a1, $t1, $zero		# $a1 = $t1 + $zero
-                addi	$a2, $zero, 1		# $a2 = $t2 + 1
-                jal		SETXY				# jump to SETXY and save position to $ra
+        add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+        add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+        addi	$a2, $zero, 5		# $a2 = $t2 + 1
+        jal	SETXY				# jump to SETXY and save position to $ra
 
         # Load our PX and PY value
         lw      $t0, PX     #
         lw      $t1, PY     #
 
-                # Keep subtracting one to move up the piece unless we hit the top of the board
-                addi	$t2, $zero, 1			# $t2 = $zero + 1
+        # Keep subtracting one to move up the piece unless we hit the top of the board
+        addi	$t2, $zero, 1			# $t2 = $zero + 1
 
-                sub		$t4, $t1, $t2		# $t4 = $t1 - $t2
-                beq		$t4, $zero, lloop	# if $t4 == $zero then lloop
+        sub	$t4, $t1, $t2		# $t4 = $t1 - $t2
+        beq	$t4, $zero, lloop	# if $t4 == $zero then lloop
 
-                sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
-                beq		$t4, $zero, lloop	# if $t4 == $zero then lloop
+        sub	$t4, $t4, $t2		# $t4 = $t4 - $t2
+        beq	$t4, $zero, lloop	# if $t4 == $zero then lloop
 
-                sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
-                beq		$t4, $zero, lloop	# if $t4 == $zero then lloop
+        sub	$t4, $t4, $t2		# $t4 = $t4 - $t2
+        beq	$t4, $zero, lloop	# if $t4 == $zero then lloop
 
-                sub		$t4, $t4, $t2		# $t4 = $t4 - $t2
+        sub	$t4, $t4, $t2		# $t4 = $t4 - $t2
 
-                # Set this value to 0 since we dropped below it
-                add		$a0, $t0, $zero		# $a0 = $t0 + $zero
-                add		$a1, $t4, $zero		# $a1 = $t4 + $zero
-                add		$a2, $zero, $zero	# $a2 = $zero + $zero
-                jal		SETXY				# jump to SETXY and save position to $ra
+        # Set this value to 0 since we dropped below it
+        add     $a0, $t0, $zero		# $a0 = $t0 + $zero
+        add	$a1, $t4, $zero		# $a1 = $t4 + $zero
+        add	$a2, $zero, $zero	# $a2 = $zero + $zero
+        jal	SETXY				# jump to SETXY and save position to $ra
 
         beq     $t4, $zero, lloop   # if $t4 == $zero then lloop
 
@@ -1064,12 +1072,12 @@ shiftlr:
         movelrv:
 
                 # Load the original PX and PY
-                lw		$t0, PX		#
-                lw		$t1, PY		#
+                lw	$t0, PX		#
+                lw	$t1, PY		#
 
                 # Shift our x value to the right once
                 addi	$t2, $t0, 1			# $t0 = $t0 + 1
-                sw		$t2, PX		#
+                sw	$t2, PX		#
 
                 # Initialize some counters
                 addi	$t6, $zero, 4			# $t6 = $zero + 4
@@ -1077,57 +1085,57 @@ shiftlr:
 
                 movelrvloop:
 
-                        # Load 1 into a register since that's what we use for this piece
-                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+                # Load 1 into a register since that's what we use for this piece
+                addi	$t3, $zero, 5			# $t3 = $zero + 1
 
-                        # Reload PX
-                        lw		$t2, PX		#
+                # Reload PX
+                lw	$t2, PX		#
 
-                        # Set the value at the current position
-                        add		$a0, $zero, $t2		# $a0 = $zero + $t2
-                        add		$a1, $zero, $t1		# $a1 = $zero + $t1
-                        add		$a2, $zero, $t3		# $a2 = $zero + $t3
-                        jal		SETXY				# jump to SETXY
+                # Set the value at the current position
+                add	$a0, $zero, $t2		# $a0 = $zero + $t2
+                add	$a1, $zero, $t1		# $a1 = $zero + $t1
+                add	$a2, $zero, $t3		# $a2 = $zero + $t3
+                jal	SETXY				# jump to SETXY
 
-                        # Move our Y value back since it certainly moved
-                        add		$t1, $a1, $zero		# $t1 = $a0 + $zero
+                # Move our Y value back since it certainly moved
+                add	$t1, $a1, $zero		# $t1 = $a0 + $zero
 
-                        # Reload X and move it to the previous spot
-                        lw		$t0, PX		#
-                        addi	$t3, $zero, 1		# $t3 = $zero + 1
-                        sub		$t0, $t0, $t3		# $t0 = $t0 - $t3
+                # Reload X and move it to the previous spot
+                lw	$t0, PX		#
+                addi	$t3, $zero, 1		# $t3 = $zero + 1
+                sub	$t0, $t0, $t3		# $t0 = $t0 - $t3
 
-                        # We want to set the spot we moved from to zero
-                        add		$a0, $zero, $t0		# $a0 = $zero + $t0
-                        add		$a1, $zero, $t1		# $a1 = $zero + $t1
-                        add		$a2, $zero, $zero	# $a2 = $zero + $zero
-                        jal		SETXY				# jump to SETXY and save position to $ra
+                # We want to set the spot we moved from to zero
+                add	$a0, $zero, $t0		# $a0 = $zero + $t0
+                add	$a1, $zero, $t1		# $a1 = $zero + $t1
+                add	$a2, $zero, $zero	# $a2 = $zero + $zero
+                jal	SETXY				# jump to SETXY and save position to $ra
 
-                        # Reset X and Y after the function call
-                        add		$t0, $a0, $zero		# $t0 = $a0 + $zero
-                        add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+                # Reset X and Y after the function call
+                add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+                add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
-                        # If we're at the top of the board or we're done shifting pieces we wait for the next input
-                        beq		$t1, $zero, droplv	# if $t1 == $zero then droplv
-                        beq		$t5, $t6, droplv	# if $t5 == $t6 then droplv
+                # If we're at the top of the board or we're done shifting pieces we wait for the next input
+                beq	$t1, $zero, droplv	# if $t1 == $zero then droplv
+                beq	$t5, $t6, droplv	# if $t5 == $t6 then droplv
 
-                        # We need to increase our counter and move our y-value
-                        addi	$t4, $zero, 1		# $t4 = $zero + 1
-                        add		$t5, $t5, $t4		# $t5 = $t5 + $t4
-                        sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
+                # We need to increase our counter and move our y-value
+                addi	$t4, $zero, 1		# $t4 = $zero + 1
+                add	$t5, $t5, $t4		# $t5 = $t5 + $t4
+                sub	$t1, $t1, $t4		# $t1 = $t1 - $t4
 
-                        j		movelrvloop			# jump to movelrvloop
+                j	movelrvloop			# jump to movelrvloop
 
         movellv:
 
                 # Load the original PX and PY
-                lw		$t0, PX		#
-                lw		$t1, PY		#
+                lw	$t0, PX		#
+                lw	$t1, PY		#
 
                 # Shift our x value to the left once
                 addi	$t3, $zero, 1			# $t3 = $zero + 1
-                sub		$t2, $t0, $t3		# $t2t = $t0 - $t3
-                sw		$t2, PX		#
+                sub	$t2, $t0, $t3		# $t2t = $t0 - $t3
+                sw	$t2, PX		#
 
                 # Initialize some counters
                 addi	$t6, $zero, 4			# $t6 = $zero + 4
@@ -1136,7 +1144,7 @@ shiftlr:
                 movellvloop:
 
                         # Load 1 into a register since that's what we use for this piece
-                        addi	$t3, $zero, 1			# $t3 = $zero + 1
+                        addi	$t3, $zero, 5			# $t3 = $zero + 1
 
                         # Set the value at the current position
                         add		$a0, $zero, $t2		# $a0 = $zero + $t2
