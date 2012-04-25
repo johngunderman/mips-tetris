@@ -105,9 +105,11 @@ def main_loop():
                     d = data[x * 8 + y]
                     if d == "0":
                         display_block(x,y, BLACK)
-                    if d == "1":
+                    elif d == "1":
                         display_block(x,y, RED)
-                    if d == "2":
+                    elif d == "2":
+                        display_block(x,y, GREEN)
+                    else:
                         display_block(x,y, BLUE)
 
         pygame.display.update()
