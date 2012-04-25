@@ -254,7 +254,7 @@ UPDATEBOARD:
 #		beq		$t0, $t2, CREATEBZ	# if $t0 == $t2 then CREATEBZ
 
                 addi	$t0, $zero, 5			# $t0 = $zero + 5
-		beq		$t0, $t2, CREATEL	# if $t0 == $t2 then CREATEL
+                beq		$t0, $t2, CREATEL	# if $t0 == $t2 then CREATEL
 
                 addi	$t0, $zero, 6			# $t0 = $zero + 6
 #		beq		$t0, $t2, CREATEBL	# if $t0 == $t2 then CREATEBL
@@ -1183,12 +1183,11 @@ shiftlr:
 # This is the procedure that is going to handle a lot of our game logic
 .globl CHECKBOARD
 CHECKBOARD:
-
         sw		$ra, 0($sp)		# Store return address onto the stack
 
         # We want to check the top row of our board
         addi	$t9, $zero, 0			# $t1 = $zero + 0
-        addi	$t4, $zero, 0			# $t4 = $zero + 1
+        addi	$t4, $zero, 0			# $t4 = $zero + 0
 
         j		toprow				# jump to toprow
 
@@ -1215,18 +1214,20 @@ CHECKBOARD:
                 add		$t2, $zero, $v0		# $t2 = $zero + $v0
 
                 # If we read the end of the board, then we know we are finsihed checking
-                addi	$t1, $zero, 1			# $t1 = $zero + 1
-                beq		$t2, $t1, finishcheck	# if $v0 == $t1 then target
+                #addi	$t1, $zero, 1			# $t1 = $zero + 1
+                #beq		$v0, $t1, finishcheck	# if $v0 == $t1 then target
 
                 # If the space we're looking at is 0 then we know we can't clear the row so we move on
-                beq		$t2, $zero, NEXTROW	# if $v0 == $t1 then target
+                bne		$t2, $zero, controw	# if $v0 == $t1 then target
+                li		$t4, 0
+                jal		NEXTROW
 
                 # If our NEXTROW returns 1 then we have also finsihed checking
                 addi	$t3, $zero, 1			# $t3 = $zero + 1
-                beq		$v0, $t3, finishcheck	# if $v0 == $t3 then finishcheck
-
+                beq		$v0, $t3, finishcheck	# if $v1 == $t3 then finishcheck
+        controw:
                 # If our counter makes it to 8, then we have to clear this row
-                addi	$t4, $zero, 1			# $t4 = $zero + 1
+                addi	$t4, $t4, 1			# $t4 = $t4 + 1
                 addi	$t0, $zero, 8			# $t0 = $zero + 8
                 beq		$t4, $t0, clearrow	# if $t0 4= $t0 tclearrowrget
 
@@ -1251,18 +1252,26 @@ CHECKBOARD:
                 addi	$t3, $zero, 1			# $t3 = $zero + 1
                 sub		$t2, $t1, $t3		# $t2 = $t1 - $t2
 
-
                 clearloop:
-
+                        add		$t7, $zero, $t1
                         # Call GETARGXY to get the value stored at our position
                         add		$a0, $zero, $t0		# $a0 = $zero + $t0
                         add		$a1, $zero, $t2		# $a1 = $zero + $t2
                         jal		GETARGXY				# jump to GETARGXY and save position to $ra
 
+                        add		$t0, $zero, $a0
+                        add		$t2, $zero, $a1
+                        add		$t1, $zero, $t7
+                        add		$t6, $zero, $v0
+
                         # Call SETXY to set our new value
+                        add		$a0, $zero, $t0
                         add		$a1, $zero, $t1		# $a1 = $zero + $t1
-                        add		$a2, $zero, $v0		# $a2 = $zero + $v0
+                        add		$a2, $zero, $t6		# $a2 = $zero + $v0
                         jal		SETXY				# jump to SETXY and save position to $ra
+
+                        add		$t0, $zero, $a0
+                        add		$t1, $zero, $a1
 
                         # Move to the next column
                         addi	$t0, $t0, 1			# $t0 = $t0 + 1
