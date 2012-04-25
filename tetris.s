@@ -1929,7 +1929,7 @@ CREATES:
 
 			# If we've run this loop 2 times we've accounted for each square on the right
 			addi	$t8, $t8, 1			# $8 = $t8 + 1
-			addi	$t7, $zero, 2		# $t7 = $zero + 2
+			addi	$t7, $zero, 3		# $t7 = $zero + 2
 			beq		$t8, $t7, movesr	# if $t8 == $t1 then movesr
 
 			# If we're at the top row and we are here then we are free to move
@@ -1940,8 +1940,8 @@ CREATES:
 
 	shiftsl:
 		#reload x and y
-		lw	$t0, PX
-		lw	$t1, PY
+#		lw	$t0, PX
+#		lw	$t1, PY
 
 		#add -1 to x to check left side of square
 		addi	$t0, $t0, -1	
@@ -1949,21 +1949,20 @@ CREATES:
 		# If we're in the first column we don't even want to bother shifting 
 		beq		$t0, $zero, drops	# if $t0 == $zero then dropsv
 
-		# We subtract 1 from our PX value for testing purposes 
-		addi	$t6, $zero, 1		# $t6 = $zero + 1
-		sub		$t0, $t0, $t6		# $t0 = $t0 - $t6
+		# We subtract 1 from our PX value to test outer left of square 
+		addi	$t0, $t0, -1		# $t0 = $t0 - 1
 		
 		#now do the shift
 		j		shiftslloop
 	
 		shiftslloop:
 
-			# Get the value stored at PX,PY
+			# Get the value stored at X-2,Y
 			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
 			jal		GETARGXY			# jump to GETARGXY and save position to $ra
 
-			# We want to get our X and Y values back
+			# We want to get our X-2 and Y values back
 			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
 			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 
@@ -1974,12 +1973,11 @@ CREATES:
 			beq		$t1, $zero, movesl	# if $t1 == $zero then movesl
 			
 			# Subtract 1 from y to move up 
-			addi	$t7, $zero, 1		# $t7 = $zero + 1
-			sub		$t1, $t1, $t7		# $t1 = $t1 - $t7
+			addi	$t1, $t1, -1		# $t1 = $t1 - 1
 
 			# If we've run this loop 2 times we've accounted for each block in the square
 			addi	$t8, $t8, 1			# $8 = $t8 + 1
-			addi	$t7, $zero, 2		# $t7 = $zero + 2
+			addi	$t7, $zero, 3		# $t7 = $zero + 2
 			beq		$t8, $t7, movesl		# if $t8 == $t7 then movesl
 
 			# Jump back to the top of our loop 
@@ -1998,6 +1996,22 @@ CREATES:
         addi    $t4, $zero, 16           # $t4 = $zero + 16
         beq     $t1, $t4, CHECKBOARD    # if $t1 == $t4 then UPDATEBOARD
      
+		# Check what value is stored at this location 
+		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+		jal		GETARGXY			# jump to GETARGXY and save position to $ra
+
+        # If the space isn't empty, we're done so check the board 
+        bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+
+        # Load our PX and PY value 
+        lw      $t0, PX     # 
+        lw      $t1, PY     # 
+
+		# Check left side, x-1,y+1
+		addi	$t0, $t0, -1
+		addi	$t1, $t1, 1
+
 		# Check what value is stored at this location 
 		add		$a0, $t0, $zero		# $a0 = $t0 + $zero
 		add		$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -2076,104 +2090,106 @@ CREATES:
 		lw		$t1, PY		# 
 
 		# Shift our x value to the right once 
-		addi	$t2, $zero, 1		# $t3 = $zero + 1
-		add		$t0, $t0, $t2		# $t2t = $t0 + $t3
-		sw		$t0, PX		# 
+		addi	$t0, $t0, 1		# $t0 = $t0 + 1
+		sw		$t0, PX		
 
-		# Initialize some counters 
-		addi	$t6, $zero, 2			# $t6 = $zero + 2
-		addi	$t5, $zero, 1			# $t5 = $zero + 1
+		# Load 2 into a register since that's what we use for this piece 
+		addi	$t2, $zero, 2			# $t3 = $zero + 2
 
-		movesrloop:
-			
-			# Load 2 into a register since that's what we use for this piece 
-			addi	$t2, $zero, 2			# $t3 = $zero + 2
-					
-			# Set the value at the current position 
-			add		$a0, $zero, $t0		# $a0 = $zero + $t2
-			add		$a1, $zero, $t1		# $a1 = $zero + $t1
-			add		$a2, $zero, $t2		# $a2 = $zero + $t3
-			jal		SETXY				# jump to SETXY
+		#set x+1,y to 2
+		add		$a0, $zero, $t0		# $a0 = $zero + $t0
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $t2		# $a2 = $zero + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
 
-			# Reload X and move it to the previous left side
-			lw		$t1, PY
-			lw		$t0, PX		# 
-			addi	$t0, $t0, -2		# $t0 = $t0 - 2
-			
-			# We want to set the previous left side to zero 
-			add		$a0, $zero, $t0		# $a0 = $zero + $t0
-			add		$a1, $zero, $t1		# $a1 = $zero + $t1
-			add		$a2, $zero, $zero	# $a2 = $zero + $zero
-			jal		SETXY				# jump to SETXY and save position to $ra
+		#move to x-2
+		add		$t0, $a0, $zero
+		add		$t1, $a1, $zero
+		addi	$t0, $t0, -2		# $t0 = $t0 - 2
 
-			# We need to set our X and Y back
-#			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
-#			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
-		
-			# If we're at the top of the board or we're done shifting pieces we wait for the next input
-			beq		$t1, $zero, drops	# if $t1 == $zero then drops
-			beq		$t5, $t6, drops		# if $t5 == $t6 then drops
+		#set x-2 to 0
+		add		$a0, $zero, $t0		# $a0 = $zero + $t2
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $zero	# $a2 = $zero + $t3
+		jal		SETXY				# jump to SETXY
 
-			# We need to increase our counter and move our y-value 
-			addi	$t4, $zero, 1		# $t4 = $zero + 1
-			add		$t5, $t5, $t4		# $t5 = $t5 + $t4
-			sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
-					
-			j		movesrloop			# jump to movesrloop		
+		#move up a row, y-1
+		add		$t0, $a0, $zero
+		add		$t1, $a1, $zero
+		addi	$t1, $t1, -1		# $t0 = $t0 - 2
 
+		#set to 0
+		add		$a0, $zero, $t0		# $a0 = $zero + $t2
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $zero	# $a2 = $zero + $t3
+		jal		SETXY				# jump to SETXY
+
+		#top right square, x+2
+		add		$t0, $a0, $zero
+		add		$t1, $a1, $zero
+		addi	$t0, $t0, 2		# $t0 = $t0 - 2
+
+		#set to 2
+		add		$a0, $zero, $t0		# $a0 = $zero + $t2
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $t2		# $a2 = $zero + $t3
+		jal		SETXY				# jump to SETXY
+
+		#branch
+		j		drops	
+	
 	movesl:
 
 		# Load the original PX and PY
 		lw		$t0, PX		# 
 		lw		$t1, PY		# 
 
-		# Shift our x value to the left 2 
-		addi	$t2, $zero, -2		# $t2 = $zero - 2
-		add		$t0, $t0, $t2		# $t0 = $t0 + $t2
-		sw		$t0, PX		 
+		# Load 2 into a register since that's what we use for this piece 
+		addi	$t2, $zero, 2			# $t3 = $zero + 2
 
-		# Initialize some counters 
-		addi	$t6, $zero, 2			# $t6 = $zero + 2
-		addi	$t5, $zero, 1			# $t5 = $zero + 1
+		#set x,y to 0
+		add		$a0, $zero, $t0		# $a0 = $zero + $t0
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $zero	# $a2 = $zero + $zero
+		jal		SETXY				# jump to SETXY and save position to $ra
 
-		moveslloop:
-			
-			# Load 2 into a register since that's what we use for this piece 
-			addi	$t2, $zero, 2			# $t3 = $zero + 2
-					
-			# Set the value at the current position 
-			add		$a0, $zero, $t0		# $a0 = $zero + $t2
-			add		$a1, $zero, $t1		# $a1 = $zero + $t1
-			add		$a2, $zero, $t2		# $a2 = $zero + $t3
-			jal		SETXY				# jump to SETXY
+		#move to x-1
+		add		$t0, $a0, $zero
+		add		$t1, $a1, $zero
+		addi	$t0, $t0, -1		# $t0 = $t0 - 2
+		sw		$t0, PX
 
-			# Reload X and move it to the previous right side
-			lw		$t1, PY
-			lw		$t0, PX	 
-			addi	$t0, $t0, 2			# $t0 = $t0 - 2
-			
-			# We want to set the previous right side to zero 
-			add		$a0, $zero, $t0		# $a0 = $zero + $t0
-			add		$a1, $zero, $t1		# $a1 = $zero + $t1
-			add		$a2, $zero, $zero	# $a2 = $zero + $zero
-			jal		SETXY				# jump to SETXY and save position to $ra
+		#set x-1 to 2
+		add		$a0, $zero, $t0		# $a0 = $zero + $t2
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $t2		# $a2 = $zero + $t3
+		jal		SETXY				# jump to SETXY
 
-			# We need to set our X and Y back
-#			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
-#			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
-		
-			# If we're at the top of the board or we're done shifting pieces we wait for the next input
-			beq		$t1, $zero, drops	# if $t1 == $zero then drops
-			beq		$t5, $t6, drops		# if $t5 == $t6 then drops
+		#move up a row, y-1
+		add		$t0, $a0, $zero
+		add		$t1, $a1, $zero
+		addi	$t1, $t1, -1		# $t0 = $t0 - 2
 
-			# We need to increase our counter and move our y-value 
-			addi	$t4, $zero, 1		# $t4 = $zero + 1
-			add		$t5, $t5, $t4		# $t5 = $t5 + $t4
-			sub		$t1, $t1, $t4		# $t1 = $t1 - $t4
-					
-			j		moveslloop			# jump to movesrloop		
+		#set to 2
+		add		$a0, $zero, $t0		# $a0 = $zero + $t2
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $t2		# $a2 = $zero + $t3
+		jal		SETXY				# jump to SETXY
 
-	
+		#top right square, x
+		add		$t0, $a0, $zero
+		add		$t1, $a1, $zero
+		addi	$t0, $t0, 1		# $t0 = $t0 - 2
+
+		#set to 2
+		add		$a0, $zero, $t0		# $a0 = $zero + $t2
+		add		$a1, $zero, $t1		# $a1 = $zero + $t1
+		add		$a2, $zero, $zero	# $a2 = $zero + $t3
+		jal		SETXY				# jump to SETXY
+
+		#branch
+		j		drops	
+
 # This is the procedure that is going to handle a lot of our game logic
 .globl CHECKBOARD
 CHECKBOARD:
