@@ -3497,6 +3497,8 @@ shiftlr:
                 # If we don't hit one of these then something went wrong and it's best to change anything
                 j		droplv				# jump to droplv
 
+
+
                 shiftllvloop:
 
                         # Get the value stored at PX,PY
@@ -3730,6 +3732,16 @@ shiftlr:
                 # Initialize some counters
                 addi	$t6, $zero, 4			# $t6 = $zero + 4
                 addi	$t5, $zero, 1			# $t5 = $zero + 1
+
+                ## move our derpy bottom of the L piece
+                addi    $a0, $t2, 2
+                add     $a1, $zero, $t1
+                add     $a2, $zero, $zero
+                jal     SETXY
+
+                # We need to set our X and Y back
+                add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+                add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
                 movellvloop:
 
