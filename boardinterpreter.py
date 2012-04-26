@@ -20,7 +20,8 @@ L_PIECE      = "5\n"
 BL_PIECE     = "6\n"
 T_PIECE      = "7\n"
 
-PIECES = [PIPE_PIECE, SQUARE_PIECE, Z_PIECE, BZ_PIECE, T_PIECE]
+#PIECES = [PIPE_PIECE, SQUARE_PIECE, Z_PIECE, BZ_PIECE, T_PIECE, L_PIECE, BL_PIECE]
+PIECES = [L_PIECE]
 
 BLACK = pygame.Color(0,0,0)
 RED   = pygame.Color(255,0,0)
@@ -122,7 +123,7 @@ def main_loop():
                     elif d == "5":
                         display_block(x,y, PURPLE)
                     elif d == "6":
-                        display_block(x,y, YElLOW)
+                        display_block(x,y, YELLOW)
                     elif d == "7":
                         display_block(x,y, CYAN)
 

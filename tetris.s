@@ -3390,11 +3390,14 @@ lloop:
 shiftlr:
 
         # If we're moving past the end of the board we don't want to move
-        addi    $t7, $zero, 7       # $t7 = $zero + 8
+        addi    $t7, $zero, 6       # $t7 = $zero + 8
         beq     $t0, $t7, droplv    # if $t0 == $t7 then droplv
 
         # We add one to our PX-value for testing purposes
         addi	$t0, $t0, 1			# $t0 = $t0 + 1
+
+        ## we add one to our PY value for testing purposes:
+        addi    $t1, $t1, 1
 
         # We need a counter initialized for looping purposes
         addi	$t8, $zero, 1			# $t8 = $zero + 1
@@ -3410,6 +3413,21 @@ shiftlr:
         # If we don't hit one of these then something went wrong and it's best to change anything
         j		lloop				# jump to lloop
 
+        shiftlrvloop1:
+                ## check if our L bottom right is valid
+                lw      $t0, PX
+                lw      $t1, PY
+
+                addi    $t0, $t0, 2
+
+                add     $a0, $t0, $zero
+                add     $a1, $t1, $zero
+                jal     GETARGXY
+
+                ## if we can't shift, drop
+                bne     $v0, $zero, droplv
+
+                b       movelrv
 
         shiftlrvloop:
 
@@ -3429,10 +3447,11 @@ shiftlr:
                 addi	$t7, $zero, 1		# $t7 = $zero + 1
                 sub		$t1, $t1, $t7		# $t1 = $t1 - $t7
 
-                # If we've run this loop 4 times we've accounted for each square
+                # If we've run this loop 3 times we've accounted for each square
+                ## in the vertical
                 addi	$t8, $t8, 1			# $8 = $t8 + 1
-                addi	$t7, $zero, 4		# $t7 = $zero + 1
-                beq		$t8, $t7, movelrv	# if $t8 == $t1 then movelrv
+                addi	$t7, $zero, 2		# $t7 = $zero + 1
+                beq	$t8, $t7, shiftlrvloop1	# if $t8 == $t1 then movelrv
 
                 # If we're at the top row and we are here then we are free to move
                 beq		$t1, $zero, movelrv	# if $t1 == $zero then movelrv
@@ -3727,7 +3746,7 @@ shiftlr:
                 sw	$t2, PX		#
 
                 # Initialize some counters
-                addi	$t6, $zero, 4			# $t6 = $zero + 4
+                addi	$t6, $zero, 3			# $t6 = $zero + 4
                 addi	$t5, $zero, 1			# $t5 = $zero + 1
 
                 ## move our derpy bottom of the L piece
