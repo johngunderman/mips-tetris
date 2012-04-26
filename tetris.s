@@ -4351,7 +4351,7 @@ rotatebl:
 
 			#valueto be stored for the piece
 			addi	$t3, $zero, 6
-			
+
 			#move to left of bottom row
 			addi	$t0, $t0, -1
 
@@ -4655,7 +4655,7 @@ rotatebl:
 		shiftbll4:
 			#move to left of top row
 			addi	$t0, $t0, -2
-			
+
 			#if in far left, don't shift, just drop
 			beq	$t0, $zero, dropbl
 
@@ -4706,7 +4706,7 @@ rotatebl:
 
 			#valueto be stored for the piece
 			addi	$t3, $zero, 6
-	
+
 			#move to left of top row
 			addi	$t0, $t0, -2
 
@@ -6263,7 +6263,7 @@ rotatez:
 			jal	SETXY			# jump to SETXY and save position to $ra
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
-	
+
 			#set PX
 			addi	$t0, $t0, 1
 			addi	$t1, $t1, -1
@@ -8230,7 +8230,9 @@ GAMEOVER:
 
 	addi	$t2, $zero, 4		# $t2 = $zero + 4
 
-	j		gameoverloop				# jump to gameoverloop
+	j		endgame				# jump to endgame
+
+#	j		gameoverloop				# jump to gameoverloop
 
 	gameoverloop:
 
@@ -8254,6 +8256,20 @@ GAMEOVER:
 
 			addi	$t5, $zero, 8			# $t5 = $zero + 8
 			beq		$t3, $t5, PRINTBOARD	# if $t3 == $t5 then PRINTBOARD
+
+			# Make MIPS wait for integer input
+			li		$v0, 5		# $v0 = 5
+			syscall				# execute
+
+ 			# Prompt for user input from Python
+      		li        $a0, 1        # $a0 = 1
+      		li        $v0, 1        # $v0 = 1
+       		syscall
+
+	        # Print a new line
+	        li      $v0, 4      # system call #4 - print string
+	        la      $a0, newline    # $a0 = $zero + 15
+	        syscall             # execute
 
 			j		printgameover				# jump to printgameover
 
