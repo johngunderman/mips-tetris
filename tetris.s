@@ -2224,7 +2224,7 @@ CREATEZ:
 	sw      $t1, PY        # 
 
 	#store the first two blocks on the board
-	addi	$t2, $zero, 4
+	addi	$t2, $zero, 3
 	add	$a0, $zero, $t0
 	add	$a1, $zero, $t1
 	add	$a2, $zero, $t2
@@ -2233,7 +2233,7 @@ CREATEZ:
 	addi	$t0, $a0, -1
 	add	$t1, $zero, $a1
 	
-	addi	$t2, $zero, 4
+	addi	$t2, $zero, 3
 	add	$a0, $zero, $t0
 	add	$a1, $zero, $t1
 	add	$a2, $zero, $t2
@@ -2351,7 +2351,7 @@ rotatez:
 			bne	$v0, $zero, dropzv	# if $v0 != $zero then dropzv
 
 		dorotatezvtoh:
-			addi	$t3, $zero, 4
+			addi	$t3, $zero, 3
 
 			# Load PX and PY
 			lw	$t0, PX		# 
@@ -2481,7 +2481,7 @@ rotatez:
 			bne	$v0, $zero, dropzh	# if $v0 != $zero then dropzh
 
 		dorotatezhtov:
-			addi	$t3, $zero, 4
+			addi	$t3, $zero, 3
 
 			# Load PX and PY
 			lw	$t0, PX		# 
@@ -2627,7 +2627,7 @@ rotatez:
 			sw	$t0, PX		# 
 
 			#valueto be stored for the piece
-			addi	$t3, $zero, 4
+			addi	$t3, $zero, 3
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -2746,7 +2746,7 @@ rotatez:
 			sw	$t0, PX		# 
 
 			#valueto be stored for the piece
-			addi	$t3, $zero, 4
+			addi	$t3, $zero, 3
 
 			# writing the values in the new spots
 			addi	$t0, $t0, -1
@@ -2866,7 +2866,7 @@ rotatez:
 			sw	$t0, PX		# 
 
 			#valueto be stored for the piece
-			addi	$t3, $zero, 4
+			addi	$t3, $zero, 3
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -2985,7 +2985,7 @@ rotatez:
 			sw	$t0, PX		# 
 
 			#valueto be stored for the piece
-			addi	$t3, $zero, 4
+			addi	$t3, $zero, 3
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -3082,7 +3082,7 @@ rotatez:
         	sw      $t1, PY        # 
 
 		#valueto be stored for the piece
-		addi	$t3, $zero, 4
+		addi	$t3, $zero, 3
 
 		# writing the values in the new spots
 		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -3191,7 +3191,7 @@ rotatez:
         	sw      $t1, PY        # 
 
 		#valueto be stored for the piece
-		addi	$t3, $zero, 4
+		addi	$t3, $zero, 3
 
 		# writing the values in the new spots
 		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
