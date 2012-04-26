@@ -4706,6 +4706,99 @@ rotatebl:
 
 
 		shiftbll4:
+			#if in far left, don't shift, just drop
+			beq	$t0, $zero, dropbl
+
+			#move one to the left to check for space to move
+			addi	$t0, $t0, -1
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If this position is not free, then we don't want to shift
+			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
+
+			#move to check to the left of the middle row
+			addi	$t0, $t0, 2
+			addi	$t1, $t1, 1
+
+			#check if its still on the board
+			blt	$t1, $zero, doshiftbll4
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If this position is not free, then we don't want to shift
+			bne	$v0, $zero, dropbl	# if $v0 != $zero then droppv
+
+		doshiftbll4:
+			# Load PX and PY
+			lw	$t0, PX		#
+			lw	$t1, PY		#
+
+			#shift the pivot one to the left
+			addi	$t0, $t0, -1
+
+			# We want to store this value in PX since it represents the new pivot
+			sw	$t0, PX		#
+
+			#valueto be stored for the piece
+			addi	$t3, $zero, 6
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, 3
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#move block in middle line
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, 1
+
+			#check if its still on the board
+			blt	$t1, $zero, dropbl
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, 1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			j	dropbl
 
 	shiftblr:
 
@@ -5109,6 +5202,114 @@ rotatebl:
 			j	dropbl
 
 		shiftblr4:
+			#if right side in far right, do not shift
+			addi	$t7, $zero, 5
+			bge	$t0, $t7, dropbl
+
+			#move one to the right to check for space to move
+			addi	$t0, $t0, 3
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If this position is not free, then we don't want to shift
+			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
+
+			#move one up to check for space to move
+			addi	$t1, $t1, -1
+
+			#check if its still on the board
+			blt	$t1, $zero, doshiftblr4
+
+			# Get the value stored at PX,PY
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			jal	GETARGXY			# jump to GETARGXY and save position to $ra
+
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If this position is not free, then we don't want to shift
+			bne	$v0, $zero, dropbl	# if $v0 != $zero then droppv
+
+		doshiftblr4:
+			# Load PX and PY
+			lw	$t0, PX		#
+			lw	$t1, PY		#
+
+			#shift the pivot one to the right
+			addi	$t0, $t0, 1
+
+			# We want to store this value in PX since it represents the new pivot
+			sw	$t0, PX		#
+
+			#valueto be stored for the piece
+			addi	$t3, $zero, 6
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, -1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#move block in middle line
+			addi	$t0, $t0, 3
+
+			#check if its still on the board
+			blt	$t1, $zero, dropbl
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, 1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#move block in top line
+			addi	$t0, $t0, 1
+
+			#check if its still on the board
+			blt	$t1, $zero, dropbl
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			j	dropbl
+
 
 	dropbl:
 
