@@ -3866,7 +3866,7 @@ rotatebl:
 		#if $t9 = 3, rotate 3 to 4
 		addi	$t3, $zero, 3
 		beq	$t3, $t9, rotatebl3to4
-		
+
 		#otherwise rotate 4 to 1
 		j	rotatebl4to1
 
@@ -4343,7 +4343,7 @@ rotatebl:
 		#if $t9 = 3, shiftbll3
 		addi	$t3, $zero, 3
 		beq	$t3, $t9, shiftbll3
-		
+
 		#otherwise shiftbll4
 		j	shiftbll4
 
@@ -4822,7 +4822,7 @@ rotatebl:
 		#if $t9 = 3, shiftblr3
 		addi	$t3, $zero, 3
 		beq	$t3, $t9, shiftblr3
-		
+
 		#otherwise shiftblr4
 		j	shiftblr4
 
@@ -5207,7 +5207,7 @@ rotatebl:
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
 			jal	SETXY			# jump to SETXY and save position to $ra
-			
+
 			j	dropbl
 
 		shiftblr4:
@@ -5333,7 +5333,7 @@ rotatebl:
 		#if $t9 = 3, dropbl3
 		addi	$t3, $zero, 3
 		beq	$t3, $t9, dropbl3
-		
+
 		#otherwise dropbl4
 		j	dropbl4
 
@@ -8362,15 +8362,49 @@ CHECKBOARD:
 
 .globl GAMEOVER
 GAMEOVER:
-	# When the game ends, we write a 9 to STDOUT to tell Python we're done as well
-	li		$v0, 1		# system call #4 - print string
-	addi	$a0, $zero, 9			# $a0 = $zero + 9
-	syscall				# execute
 
-	# Print a new line
-    li      $v0, 4      # system call #4 - print string
-    la      $a0, newline    # $a0 = $zero + 15
-    syscall             # execute
+	la		$t0, 512(BOARD)		#
+	la		$t4, 0(BOARD)		#
 
-	li		$v0, 10			# Syscall to end program
-	syscall
+	addi	$t2, $zero, 4		# $t2 = $zero + 4
+
+	j		gameoverloop				# jump to gameoverloop
+
+	gameoverloop:
+
+		beq		$t4, $t0, endgame	# if $t4 == $t0 then endgame
+
+		addi	$t1, $zero, 7		# $t1 = $zero + 0
+		addi	$t3, $zero, 1		# $t3 = $zero + 1
+
+		printgameover:
+
+			beq		$t3, $t5, gameoverloop	# if $t3 == $t5 then gameoverloop
+
+			sw		$t1, ($t0)		#
+
+			addi	$t5, $zero, 1			# $t5 = $zero + 1
+			sub		$t1, $t1, $t5		# $t1 = $t1 - $t5
+			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+
+			addi	$t3, $t3, 1			# $t3 = $t3 + 1
+
+			addi	$t5, $zero, 8			# $t5 = $zero + 8
+			beq		$t3, $t5, PRINTBOARD	# if $t3 == $t5 then PRINTBOARD
+
+			j		printgameover				# jump to printgameover
+
+	endgame:
+
+		# When the game ends, we write a 9 to STDOUT to tell Python we're done as well
+		li		$v0, 1		# system call #4 - print string
+		addi	$a0, $zero, 9			# $a0 = $zero + 9
+		syscall				# execute
+
+		# Print a new line
+	    li      $v0, 4      # system call #4 - print string
+	    la      $a0, newline    # $a0 = $zero + 15
+	    syscall             # execute
+
+		li		$v0, 10			# Syscall to end program
+		syscall
