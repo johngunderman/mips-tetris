@@ -4324,32 +4324,33 @@ CHECKBOARD:
 		j		toprow				# jump to toprow
 
 	aftertop:
-
 		# Grab a value from the board
 		jal		GETINCREMENT				# jump to GETINCREMENT and save position to $ra
-
+		
 		# Move the result of GETINCREMENT into a temp register
 		add		$t2, $zero, $v0		# $t2 = $zero + $v0
 
 		# If we read the end of the board, then we know we are finsihed checking
-		#addi	$t1, $zero, 1			# $t1 = $zero + 1
-		#beq		$v0, $t1, finishcheck	# if $v0 == $t1 then target
+		addi	$t1, $zero, 1			# $t1 = $zero + 1
+		beq		$v1, $t1, finishcheck	# if $v0 == $t1 then target
 
 		# If the space we're looking at is 0 then we know we can't clear the row so we move on
 		bne		$t2, $zero, controw	# if $v0 == $t1 then target
-		li		$t4, 0
+		add		$t4, $zero, $zero
 		jal		NEXTROW
 
 		# If our NEXTROW returns 1 then we have also finsihed checking
 		addi	$t3, $zero, 1			# $t3 = $zero + 1
 		beq		$v0, $t3, finishcheck	# if $v1 == $t3 then finishcheck
 	controw:
-		# If our counter makes it to 8, then we have to clear this row
+		# If our counter makes it to 8, then we know the first 7 spaces are filled
 		addi	$t4, $t4, 1			# $t4 = $t4 + 1
 		addi	$t0, $zero, 8			# $t0 = $zero + 8
-		beq		$t4, $t0, clearrow	# if $t0 4= $t0 tclearrowrget
+		bne		$t4, $t0, aftertop
 
-		j		aftertop				# jump to aftertop
+		#check the 8th space in the row, need to do this to make sure we ar eon the correct row when we move to clearrow
+		jal		GETXY
+		beq		$v0, $zero, aftertop
 
 	clearrow:
 		# Load our X and Y values
