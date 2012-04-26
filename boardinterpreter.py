@@ -20,6 +20,8 @@ L_PIECE      = "5\n"
 BL_PIECE     = "6\n"
 T_PIECE      = "7\n"
 
+PIECES = [PIPE_PIECE, SQUARE_PIECE, Z_PIECE, BZ_PIECE, T_PIECE]
+
 BLACK = pygame.Color(0,0,0)
 RED   = pygame.Color(255,0,0)
 GREEN = pygame.Color(0,255,0)
@@ -73,14 +75,7 @@ def main_loop():
 
         if data == PROMPT_PIECE:
             print "prompted for piece"
-            p = ('1\n', '2\n', '3\n', '4\n', '7\n')
-    	    x =  random.randint(1,5)
-    	    spim.stdin.write(p[x])
-
-    	    #spim.stdin.write(PIPE_PIECE)
-            #spim.stdin.write(L_PIECE)
-            #spim.stdin.write(SQUARE_PIECE)
-            #spim.stdin.write(Z_PIECE)
+            spim.stdin.write(random.choice(PIECES))
 
 
         if data == PROMPT_TICK:
