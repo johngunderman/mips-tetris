@@ -2971,7 +2971,7 @@ CREATET:
    			beq		$t1, $zero, dropt	# if $t1 == $zero then dropt
 
    			# Subtract 1 from Y to get the top edge
-   			addi	$t2, $zero, 1			# $t2 = $zero + 1
+   			addi	$t2, $zero, 1		# $t2 = $zero + 1
    			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
 
    			# If this is along the top row don't allow rotate
@@ -2993,19 +2993,16 @@ CREATET:
    			# If this value is not zero, do not allow rotation
    			bne		$v0, $zero, dropt	# if $v0 != $zero then dropt
 
-   			# Set this value to 7
-   			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
-   			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
-   			addi	$a2, $zero, 7		# $a2 = $zero + 7
-   			jal		SETXY				# jump to SETXY and save position to $ra
+   			# If we make it this far, we are free to rotate
 
-   			# Get our X and Y back
-   			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
-   			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+   			# Reload our X and Y
+   			lw		$t0, PX		#
+   			lw		$t1, PY		#
 
-   			# Add 1 to Y and X to clear that space
+   			# Subtract 1 from Y and add 1 to X to get to the right space
+   			addi	$t2, $zero, 1		# $t2 = $zero + 1
+   			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
    			addi	$t0, $t0, 1			# $t0 = $t0 + 1
-   			addi	$t1, $t1, 1			# $t1 = $t1 + 1
 
    			# Set this space to zero
    			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -3017,9 +3014,35 @@ CREATET:
    			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
    			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 
-   			# Subtract 2 from X to get to the new tooth
-   			addi	$t2, $zero, 2		# $t2 = $zero + 2
+   			# Subtract 1 from X and Y to get to the top piece
+   			addi	$t2, $zero, 1		# $t2 = $zero + 1
    			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+   			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+
+   			# Set this value to 7
+   			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+   			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+   			addi	$a2, $zero, 7		# $a2 = $zero + 7
+   			jal		SETXY				# jump to SETXY and save position to $ra
+
+   			# Get our X and Y back
+   			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+   			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+   			# Add 1 to Y and subtract 1 from X to get back to the new tooth
+   			addi	$t2, $zero, 1		# $t2 = $zero + 1
+   			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
+   			addi	$t1, $t1, 1			# $t1 = $t1 + 1
+
+   			# Set this value to 7
+   			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+   			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+   			addi	$a2, $zero, 7		# $a2 = $zero + 7
+   			jal		SETXY				# jump to SETXY and save position to $ra
+
+   			# Get our X and Y back
+   			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+   			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 
    			# Store the new pivot
    			sw		$t0, PX		#
@@ -3093,6 +3116,16 @@ CREATET:
    			addi	$t2, $zero, 1		# $t2 = $zero + 1
    			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
    			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+
+   			# Set this value to 7
+   			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+   			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+   			addi	$a2, $zero, 7		# $a2 = $zero + 7
+   			jal		SETXY				# jump to SETXY and save position to $ra
+
+   			# Get our X and Y values back
+   			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+   			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 
    			# Set our new pointer
    			sw		$t0, PX		#
@@ -3169,6 +3202,16 @@ CREATET:
    			addi	$t2, $zero, 1		# $t2 = $zero + 1
    			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
    			addi	$t0, $t0, 1			# $t0 = $t0 + 1
+
+  			# Set the piece to 7
+   			add		$a0, $t0, $zero		# $a0 = $t0 + $zero
+   			add		$a1, $t1, $zero		# $a1 = $t1 + $zero
+   			addi	$a2, $zero, 7		# $a2 = $zero + $zero
+   			jal		SETXY				# jump to SETXY and save position to $ra
+
+  			# Get our X and Y back
+   			add		$t0, $a0, $zero		# $t0 = $a0 + $zero
+   			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 
    			# Store the new pointer
    			sw		$t0, PX		#
