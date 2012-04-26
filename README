@@ -1,0 +1,23 @@
+Dependencies:
+=============
+
+* Pygame
+* spim
+
+You probably should be running this on a unix system. the spim command
+line doesn't exist in Windows.
+
+
+How it works:
+=============
+
+Spim doesn't have graphics support, random number support, or direct
+keyboard input support, so we're using Python as a wrapper. Python
+starts up spim as a subprocess and then manages its STDIN and STDOUT
+for communcation
+
+
+How to run it
+=============
+
+$ python boardinterpreter.py
