@@ -20,8 +20,8 @@ L_PIECE      = "5\n"
 BL_PIECE     = "6\n"
 T_PIECE      = "7\n"
 
-#PIECES = [PIPE_PIECE, SQUARE_PIECE, Z_PIECE, BZ_PIECE, T_PIECE, L_PIECE, BL_PIECE]
-PIECES = [L_PIECE]
+PIECES = [PIPE_PIECE, SQUARE_PIECE, Z_PIECE, BZ_PIECE, T_PIECE, BL_PIECE]
+#PIECES = [L_PIECE]
 
 BLACK = pygame.Color(0,0,0)
 RED   = pygame.Color(255,0,0)
@@ -44,17 +44,6 @@ def run_spim():
     s = spim.stdout.readline()
     s = spim.stdout.readline()
     s = spim.stdout.readline()
-    #s = spim.stdout.readline()
-    #spim.stdout.flush()
-
-    #spim.stdin.write('1\n')
-
-    #s = spim.stdout.readline()
-    #spim.stdout.flush()
-
-    #print s
-
-    #spim.stdin.write('9\n')
 
 def init_pygame():
     pygame.init()
@@ -104,7 +93,16 @@ def main_loop():
 
         if data == END_GAME:
             print "game ending"
-            return
+            while True:
+                clock.tick(8)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        print "goodbye"
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            print "goodbye"
+                            return
 
         if len(data) == 129:
             for x in range(0,16):
