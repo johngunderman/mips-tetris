@@ -6252,12 +6252,14 @@ rotatez:
 		j	rotatezhtov
 
 		rotatezvtoh:
+			#pivot, PX, is bottom most square
 			#make sure we wont go off the edge
 			addi	$t7, $zero, 1
 			ble	$t0, $t7, dropzv
 
-			#check if botton right is clear
+			#check if top left is clear
 			addi	$t0, $t0, -1
+			addi	$t1, $t1, -2
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -6271,26 +6273,11 @@ rotatez:
 			# If this position is not free, then we don't want to rotate
 			bne	$v0, $zero, dropzv	# if $v0 != $zero then dropzv
 
-			#check if top right is clear
-			addi	$t1, $t1, -1
+			#check if middle left is clear
+			addi	$t0, $t0, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, dorotatezvtoh
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropzv	# if $v0 != $zero then dropzv
-
-			#check if top left is clear
-			addi	$t0, $t0, -1
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -6312,8 +6299,9 @@ rotatez:
 			lw	$t1, PY		#
 
 			addi	$t0, $t0, -1
+			addi	$t1, $t1, -2
 
-			#mark new squares bottom row
+			#create new square top left
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
@@ -6322,10 +6310,7 @@ rotatez:
 			add	$t1, $a1, $zero
 
 			#add middle row squares
-			addi	$t1, $t1, -1
-
-			#check if its still on the board
-			blt	$t1, $zero, endrotatezvtoh
+			addi	$t0, $t0, 1
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -6334,25 +6319,7 @@ rotatez:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			addi	$t0, $t0, -1
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
-			#erase old squares in middle row
-			addi	$t0, $t0, 2
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
+			#remove top right square
 			addi	$t0, $t0, 1
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -6362,17 +6329,22 @@ rotatez:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			addi	$t1, $t1, -1
-
-			#check if its still on the board
-			blt	$t1, $zero, endrotatezvtoh
+			#erase old bottom most square
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, 2
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero	# $a2 = $t3 + $zero
+			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
 			jal	SETXY			# jump to SETXY and save position to $ra
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
+	
+			#set PX
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, -1
+			sw	$t0, PX
+			sw	$t1, PY
 
 		endrotatezvtoh:
 			addi	$t9, $zero, 2
@@ -6383,8 +6355,8 @@ rotatez:
 			addi $t7, $zero, 7
 			beq	$t0, $t7, dropzh
 
-			#check to see if middle right is empty
-			addi	$t1, $t1, -1
+			#check to see if top right is open
+			addi	$t1, $t1, -2
 
 			#check if its still on the board
 			blt	$t1, $zero, dorotatezhtov
@@ -6401,26 +6373,8 @@ rotatez:
 			# If this position is not free, then we don't want to rotate
 			bne	$v0, $zero, dropzh	# if $v0 != $zero then dropzh
 
-			#check to see if middle right is empty
-			addi	$t0, $t0, 1
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropzh	# if $v0 != $zero then dropzh
-
-			#check to see if top row is empty
-			addi	$t1, $t1, -1
-
-			#check if its still on the board
-			blt	$t1, $zero, dorotatezhtov
+			#check to see if middle right is open
+			addi	$t1, $t1, 1
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -6442,8 +6396,6 @@ rotatez:
 			lw	$t1, PY		#
 
 			#erase bottom row
-			addi	$t0, $t0, -1
-
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
@@ -6451,7 +6403,8 @@ rotatez:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase middle row
+			#erase top left
+			addi	$t0, $t0, -2
 			addi	$t1, $t1, -1
 
 			#check if its still on the board
@@ -6464,16 +6417,7 @@ rotatez:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			addi	$t0, $t0, -1
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
-			#add new middle row squares
+			#add middle right
 			addi	$t0, $t0, 2
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -6483,27 +6427,21 @@ rotatez:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			addi	$t0, $t0, 1
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
-			#add new top row square
+			#add new top right
 			addi	$t1, $t1, -1
 
-			#check if its still on the board
-			blt	$t1, $zero, endrotatezhtov
-
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
 			jal	SETXY			# jump to SETXY and save position to $ra
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
+
+			#set pivot
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, 2
+			sw	$t0, PX
+			sw	$t1, PY
 
 		endrotatezhtov:
 			addi	$t9, $zero, 1
