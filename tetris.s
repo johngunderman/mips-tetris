@@ -3788,7 +3788,8 @@ CREATEBL:
 
 	# We're picking our middle position to be 3 so let's move X there
 	# We also want to make sure we're starting at our top row as well
-	addi	$t0, $zero, 3			# $t0 = X + 3
+	#the PX and PY are the corner of the L
+	addi	$t0, $zero, 4			# $t0 = X + 3
 	addi	$t1, $zero, 0			# $t1 = $zero + 0
 
 	# Store the value for safe keeping
@@ -3802,7 +3803,7 @@ CREATEBL:
 	add	$a2, $zero, $t2
 	jal	SETXY
 
-	addi	$t0, $a0, 1
+	addi	$t0, $a0, -1
 	add	$t1, $zero, $a1
 
 	addi	$t2, $zero, 6
@@ -3894,26 +3895,10 @@ rotatebl:
 			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
 
 			#check if top left is clear
-			addi	$t0, $t0, -2
-			addi	$t1, $t1, -1
+			addi	$t0, $t0, -1
 
 			#check if its still on the board
 			blt	$t1, $zero, dorotatebl1to2
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
-
-			#check if top right is clear
-			addi	$t0, $t0, 2
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -3934,7 +3919,7 @@ rotatebl:
 			lw	$t0, PX		#
 			lw	$t1, PY		#
 
-			addi	$t1, $t1, -1
+			addi	$t0, $t0, 1
 
 			#mark new squares bottom row
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -3945,8 +3930,7 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#add middle row squares
-			addi	$t1, $t1, 1
-			addi	$t0, $t0, 2
+			addi	$t0, $t0, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, endrotatebl1to2
@@ -3958,10 +3942,8 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase old squares in middle row
-			addi	$t0, $t0, -1
-			addi	$t1, $t1, -1
-
+			#erase old squares in bottom row
+			addi	$t0, $t0, -3
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -3970,7 +3952,12 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			addi	$t1, $t1, -1
+			#remove top of long part
+			addi	$t1, $t1, -2
+			addi	$t0, $t0, 1
+
+			#check if its still on the board
+			blt	$t1, $zero, endrotatebl1to2
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -3983,7 +3970,8 @@ rotatebl:
 
 		rotatebl2to3:
 			#make sure we wont go off the edge
-			#beq	$t0, $zero, dropbl
+			addi	$t7, $zero, 13
+			bge		$t2, $t7, dropbl
 
 			#check to see if bottom is empty
 			addi	$t1, $t1, 1
@@ -4004,25 +3992,7 @@ rotatebl:
 			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
 
 			#check to see if swing through is empty
-			addi	$t0, $t0, 1
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
-
-			#check to see if rest of swing through is empty
-			addi	$t0, $t0, 1
-
-			#check if its still on the board
-			blt	$t1, $zero, dorotatebl2to3
+			addi	$t1, $t1, 1
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -4087,21 +4057,17 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#set as pivot
-			sw	$t1, PY
-
 		endrotatebl2to3:
 			addi	$t9, $zero, 3
 			j	dropbl
 
 		rotatebl3to4:
 			#make sure we wont go off the edge
-			addi	$t7, $zero, 5
-			bge	$t0, $t7, dropbl
+			addi	$t7, $zero, 2
+			ble	$t0, $t7, dropbl
 
 			#check if botton right is clear
-			addi	$t0, $t0, 2
-			addi	$t1, $t1, 1
+			addi	$t0, $t0, -2
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -4116,25 +4082,10 @@ rotatebl:
 			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
 
 			#check if top left is clear
-			addi	$t1, $t1, -1
+			addi	$t0, $t0, -2
 
 			#check if its still on the board
 			blt	$t1, $zero, dorotatebl3to4
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
-
-			#check if top right is clear
-			addi	$t0, $t0, -1
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -4155,10 +4106,9 @@ rotatebl:
 			lw	$t0, PX		#
 			lw	$t1, PY		#
 
-			addi	$t0, $t0, 2
-			addi	$t1, $t1, 1
+			addi	$t0, $t0, -2
 
-			#mark new squares bottom row
+			#mark new squares top row
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
@@ -4167,20 +4117,7 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#add middle row squares
-			addi	$t1, $t1, -1
-
-			#check if its still on the board
-			blt	$t1, $zero, endrotatebl3to4
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
-			#add middle square
-			addi	$t0, $t0, -1
+			addi	$t0, $t0, 1
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -4190,28 +4127,22 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#erase above pivot
-			addi	$t0, $t0, -1
-			addi	$t1, $t1, -1
+			addi	$t0, $t0, 2
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			add	$a2, $zero, $zero		# $a2 = $zero + $zero
 			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
 			#erase next above
-			addi	$t1, $t1, -1
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, 2
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-
-			#erase old spike
-			addi	$t0, $t0, 1
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			add	$a2, $zero, $zero		# $a2 = $zero + $zero
 			jal	SETXY			# jump to SETXY and save position to $ra
 
 		endrotatebl3to4:
@@ -4222,11 +4153,11 @@ rotatebl:
 		rotatebl4to1:
 
 			#make sure we wont go off the edge
-			#beq	$t0, $zero, dropbl
+			addi	$t7, $zero, 2
+			ble		$t0, $t7, dropbl
 
 			#check to see if top is empty
-			addi	$t0, $t0, 1
-			addi	$t1, $t1, 2
+			addi	$t1, $t1, -2
 
 			#check if its still on the board
 			blt	$t1, $zero, dorotatebl4to1
@@ -4244,25 +4175,7 @@ rotatebl:
 			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
 
 			#check to see if middle stack is free
-			addi	$t1, $t1, -1
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
-
-			#check to see if rest of swing through is empty
-			addi	$t1, $t1, -1
-
-			#check if its still on the board
-			blt	$t1, $zero, dorotatebl4to1
+			addi	$t1, $t1, 1
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -4283,8 +4196,8 @@ rotatebl:
 			lw	$t0, PX		#
 			lw	$t1, PY		#
 
-			#erase far right
-			addi	$t0, $t0, 2
+			#erase far left
+			addi	$t0, $t0, -2
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -4294,7 +4207,8 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#erase spike
-			addi	$t1, $t1, -1
+			addi	$t1, $t1, 1
+			addi	$t0, $t0, 2
 
 			#check if its still on the board
 			blt	$t1, $zero, endrotatebl4to1
@@ -4307,7 +4221,6 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#add first piece
-			addi	$t0, $t0, -1
 			addi	$t1, $t1, -2
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -4351,10 +4264,13 @@ rotatebl:
 		j	shiftbll4
 
 		shiftbll1:
+			#move one to the left to check for space to move
+			addi	$t0, $t0, -1
+
 			#if in far left, don't shift, just drop
 			beq	$t0, $zero, dropbl
 
-			#move one to the left to check for space to move
+			#move to left of bottom line
 			addi	$t0, $t0, -1
 
 			# Get the value stored at PX,PY
@@ -4419,6 +4335,9 @@ rotatebl:
 
 			#valueto be stored for the piece
 			addi	$t3, $zero, 6
+			
+			#move to left of bottom row
+			addi	$t0, $t0, -1
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -4600,7 +4519,7 @@ rotatebl:
 			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
 
 			#move to check to the left of the middle row
-			addi	$t1, $t1, -1
+			addi	$t1, $t1, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, doshiftbll3
@@ -4618,7 +4537,7 @@ rotatebl:
 			bne	$v0, $zero, dropbl	# if $v0 != $zero then droppv
 
 			#move to check to the left of the top row
-			addi	$t1, $t1, -1
+			addi	$t1, $t1, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, doshiftbll3
@@ -4658,7 +4577,7 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#erase old spot of pivot
-			addi	$t0, $t0, 1
+			addi	$t0, $t0, 2
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -4667,8 +4586,8 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#move block in middle line
-			addi	$t0, $t0, -1
-			addi	$t1, $t1, -1
+			addi	$t0, $t0, -2
+			addi	$t1, $t1, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, dropbl
@@ -4692,7 +4611,7 @@ rotatebl:
 
 			#move block in top line
 			addi	$t0, $t0, -1
-			addi	$t1, $t1, -1
+			addi	$t1, $t1, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, dropbl
@@ -4706,7 +4625,7 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#erase old spot of pivot
-			addi	$t0, $t0, 2
+			addi	$t0, $t0, 1
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -4718,6 +4637,9 @@ rotatebl:
 
 
 		shiftbll4:
+			#move to left of top row
+			addi	$t0, $t0, -2
+			
 			#if in far left, don't shift, just drop
 			beq	$t0, $zero, dropbl
 
@@ -4768,6 +4690,9 @@ rotatebl:
 
 			#valueto be stored for the piece
 			addi	$t3, $zero, 6
+	
+			#move to left of top row
+			addi	$t0, $t0, -2
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -4832,7 +4757,7 @@ rotatebl:
 		shiftblr1:
 			#if right side in far right, do not shift
 			addi	$t0, $t0, 1
-			addi	$t7, $zero, 7
+			addi	$t7, $zero, 8
 			beq	$t0, $t7, dropbl
 
 			#move one to the right to check for space to move
@@ -4908,8 +4833,8 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase old spot of pivot
-			addi	$t0, $t0, -1
+			#erase old spot of bottom line
+			addi	$t0, $t0, -2
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -4919,6 +4844,7 @@ rotatebl:
 
 			#move block in middle line
 			addi	$t0, $t0, 2
+			addi	$t1, $t1, -1
 
 			#check if its still on the board
 			blt	$t1, $zero, dropbl
@@ -4931,9 +4857,8 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase old spot of pivot
+			#erase old spot of middle line
 			addi	$t0, $t0, -1
-			addi	$t1, $t1, -1
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -4943,6 +4868,7 @@ rotatebl:
 
 			#move block in top line
 			addi	$t0, $t0, 1
+			addi	$t1, $t1, -1
 
 			#check if its still on the board
 			blt	$t1, $zero, dropbl
@@ -4955,30 +4881,14 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase old spot of pivot
+			#erase old spot of top line
 			addi	$t0, $t0, -1
-			addi	$t1, $t1, -1
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
 			jal	SETXY			# jump to SETXY and save position to $ra
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
-
-			#move block in top line
-			addi	$t0, $t0, 1
-
-			#check if its still on the board
-			blt	$t1, $zero, dropbl
-
-			# writing the values in the new spots
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
 
 			j	dropbl
 
@@ -5082,6 +4992,7 @@ rotatebl:
 
 			#if right side in far right, do not shift
 			addi	$t0, $t0, 1
+			addi	$t1, $t1, 2
 			addi	$t7, $zero, 7
 			beq	$t0, $t7, dropbl
 
@@ -5148,6 +5059,9 @@ rotatebl:
 			#valueto be stored for the piece
 			addi	$t3, $zero, 6
 
+			#move to new spot in top row
+			addi	$t0, $t0, 1
+
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -5157,7 +5071,7 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#erase old spot of pivot
-			addi	$t0, $t0, -1
+			addi	$t0, $t0, -2
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -5166,8 +5080,8 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#move block in middle line
-			addi	$t0, $t0, 2
-			addi	$t1, $t1, -2
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, dropbl
@@ -5180,8 +5094,8 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase old spot of pivot
-			addi	$t0, $t0, -2
+			#erase old spot of middle row
+			addi	$t0, $t0, -1
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -5215,11 +5129,11 @@ rotatebl:
 
 		shiftblr4:
 			#if right side in far right, do not shift
-			addi	$t7, $zero, 5
+			addi	$t7, $zero, 7
 			bge	$t0, $t7, dropbl
 
 			#move one to the right to check for space to move
-			addi	$t0, $t0, 3
+			addi	$t0, $t0, 1
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -5234,7 +5148,7 @@ rotatebl:
 			bne	$v0, $zero, dropbl	# if $v0 != $zero then dropbl
 
 			#move one up to check for space to move
-			addi	$t1, $t1, -1
+			addi	$t1, $t1, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, doshiftblr4
@@ -5273,8 +5187,8 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase old spot of pivot
-			addi	$t0, $t0, -1
+			#erase old spot of top row
+			addi	$t0, $t0, -3
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -5282,8 +5196,9 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#move block in middle line
+			#move block in bottom line
 			addi	$t0, $t0, 3
+			addi	$t1, $t1, 1
 
 			#check if its still on the board
 			blt	$t1, $zero, dropbl
@@ -5296,26 +5211,11 @@ rotatebl:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase old spot of pivot
+			#erase old spot of bottom row
 			addi	$t0, $t0, -1
-			addi	$t1, $t1, 1
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
-			#move block in top line
-			addi	$t0, $t0, 1
-
-			#check if its still on the board
-			blt	$t1, $zero, dropbl
-
-			# writing the values in the new spots
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
 			jal	SETXY			# jump to SETXY and save position to $ra
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
@@ -5365,7 +5265,7 @@ rotatebl:
 			bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
 			#check other hazard spot
-			addi	$t0, $t0, 1
+			addi	$t0, $t0, -1
 
 			#check what value is stored at this loaction
 			add	$a0, $t0, $zero
@@ -5402,7 +5302,7 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#erase old spot
-			addi	$t1, $t1, -1
+			addi	$t1, $t1, -3
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -5411,8 +5311,8 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#drop left column
-			addi	$t0, $t0, 1
-			addi	$t1, $t1, 1
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, 3
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -5423,7 +5323,7 @@ rotatebl:
 			add	$t1, $a1, $zero
 
 			#erase old top
-			addi	$t1, $t1, -3
+			addi	$t1, $t1, -1
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $zero, $zero	# $a2 = $zero + $zero
@@ -5433,136 +5333,7 @@ rotatebl:
 
 			j	blloop
 
-	dropbl2:
-		#load our PX and PY values
-		lw	$t0, PX
-		lw	$t1, PY
-
-		#add one to look at the sqare below ours
-		addi	$t1, $t1, 1
-
-		#check to make sure we don't go past the bottom of the board
-		addi	$t4, $zero, 16
-		beq 	$t1, $t4, CHECKBOARD
-
-		#check what value is stored at this loaction
-		add	$a0, $t0, $zero
-		add	$a1, $t1, $zero
-		jal	GETARGXY
-
-		# Get our values of x and y back
-		add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
-
-		#check other hazard spot
-		addi	$t0, $t0, 1
-
-		#check what value is stored at this loaction
-		add	$a0, $t0, $zero
-		add	$a1, $t1, $zero
-		jal	GETARGXY
-
-		# Get our values of x and y back
-		add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
-
-		#check other hazard spot
-		addi	$t0, $t0, 1
-
-		#check what value is stored at this loaction
-		add	$a0, $t0, $zero
-		add	$a1, $t1, $zero
-		jal	GETARGXY
-
-		# Get our values of x and y back
-		add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
-
-		# Load our PX and PY value
-        	lw      $t0, PX     #
-        	lw      $t1, PY     #
-
-        	# We add 1 to PY since we're dropping some
-        	addi    $t1, $t1, 1            # $t1 = $t1 + 1
-
-        	# If we're not done, we store our new pointer
-        	sw      $t0, PX        #
-        	sw      $t1, PY        #
-
-		#valueto be stored for the piece
-		addi	$t3, $zero, 6
-
-		# writing the values in the new spots
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
-
-		#erase old spot
-		addi	$t1, $t1, -2
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $zero, $zero	# $a2 = $zero + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
-
-		#drop middle column
-		addi	$t0, $t0, 1
-		addi	$t1, $t1, 2
-
-		# writing the values in the new spots
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
-
-		#erase old spot of pivot
-		addi	$t1, $t1, -1
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $zero, $zero	# $a2 = $zero + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
-
-		#drop right column
-		addi	$t0, $t0, 1
-		addi	$t1, $t1, 1
-
-		# writing the values in the new spots
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
-
-		#erase old spot of pivot
-		addi	$t1, $t1, -1
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $zero, $zero	# $a2 = $zero + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
-
-		j	blloop
-		dropbl3:
-
+		dropbl2:
 			#load our PX and PY values
 			lw	$t0, PX
 			lw	$t1, PY
@@ -5584,11 +5355,141 @@ rotatebl:
 			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
 			# If the space isn't empty, we're done so check the board
+		    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+
+			#check other hazard spot
+			addi	$t0, $t0, 1
+
+			#check what value is stored at this loaction
+			add	$a0, $t0, $zero
+			add	$a1, $t1, $zero
+			jal	GETARGXY
+
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If the space isn't empty, we're done so check the board
+		    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+
+			#check other hazard spot
+			addi	$t0, $t0, 1
+
+			#check what value is stored at this loaction
+			add	$a0, $t0, $zero
+			add	$a1, $t1, $zero
+			jal	GETARGXY
+
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If the space isn't empty, we're done so check the board
+		    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+
+			# Load our PX and PY value
+		    	lw      $t0, PX     #
+		    	lw      $t1, PY     #
+
+		    	# We add 1 to PY since we're dropping some
+		    	addi    $t1, $t1, 1            # $t1 = $t1 + 1
+
+		    	# If we're not done, we store our new pointer
+		    	sw      $t0, PX        #
+		    	sw      $t1, PY        #
+
+			#valueto be stored for the piece
+			addi	$t3, $zero, 6
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot
+			addi	$t1, $t1, -2
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#drop middle column
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, 2
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t1, $t1, -1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#drop right column
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, 1
+
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			#erase old spot of pivot
+			addi	$t1, $t1, -1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
+
+			j	blloop
+
+		dropbl3:
+
+			#load our PX and PY values
+			lw	$t0, PX
+			lw	$t1, PY
+
+			#add one to look at the sqare below ours
+			addi	$t1, $t1, 3
+
+			#check to make sure we don't go past the bottom of the board
+			addi	$t4, $zero, 16
+			beq 	$t1, $t4, CHECKBOARD
+
+			#check what value is stored at this loaction
+			add	$a0, $t0, $zero
+			add	$a1, $t1, $zero
+			jal	GETARGXY
+
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+
+			# If the space isn't empty, we're done so check the board
 			bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
 			#check other hazard spot
 			addi	$t0, $t0, 1
-			addi	$t1, $t1, -1
+			addi	$t1, $t1, -2
 
 			#check what value is stored at this loaction
 			add	$a0, $t0, $zero
@@ -5615,6 +5516,9 @@ rotatebl:
 
 			#valueto be stored for the piece
 			addi	$t3, $zero, 6
+
+			#move to bottom of left column
+			addi	$t1, $t1, 2
 
 			# writing the values in the new spots
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -5658,135 +5562,136 @@ rotatebl:
 
 		dropbl4:
 
-		#load our PX and PY values
-		lw	$t0, PX
-		lw	$t1, PY
+			#load our PX and PY values
+			lw	$t0, PX
+			lw	$t1, PY
 
-		#look below spike
-		addi	$t1, $t1, 2
-		addi	$t0, $t0, 2
+			#look below spike
+			addi	$t1, $t1, 2
 
-		#check to make sure we don't go past the bottom of the board
-		addi	$t4, $zero, 16
-		beq 	$t1, $t4, CHECKBOARD
+			#check to make sure we don't go past the bottom of the board
+			addi	$t4, $zero, 16
+			beq 	$t1, $t4, CHECKBOARD
 
-		#check what value is stored at this loaction
-		add	$a0, $t0, $zero
-		add	$a1, $t1, $zero
-		jal	GETARGXY
+			#check what value is stored at this loaction
+			add	$a0, $t0, $zero
+			add	$a1, $t1, $zero
+			jal	GETARGXY
 
-		# Get our values of x and y back
-		add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
-		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+			# If the space isn't empty, we're done so check the board
+		    bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
-		#check other hazard spot
-		addi	$t0, $t0, -1
-		addi	$t1, $t1, -1
+			#check other hazard spot
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, -1
 
+			#check what value is stored at this loaction
+			add	$a0, $t0, $zero
+			add	$a1, $t1, $zero
+			jal	GETARGXY
 
-		#check what value is stored at this loaction
-		add	$a0, $t0, $zero
-		add	$a1, $t1, $zero
-		jal	GETARGXY
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
-		# Get our values of x and y back
-		add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+			# If the space isn't empty, we're done so check the board
+		    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
-		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+			#check other hazard spot
+			addi	$t0, $t0, -1
 
-		#check other hazard spot
-		addi	$t0, $t0, -1
+			#check what value is stored at this loaction
+			add	$a0, $t0, $zero
+			add	$a1, $t1, $zero
+			jal	GETARGXY
 
-		#check what value is stored at this loaction
-		add	$a0, $t0, $zero
-		add	$a1, $t1, $zero
-		jal	GETARGXY
+			# Get our values of x and y back
+			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
+			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
-		# Get our values of x and y back
-		add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
+			# If the space isn't empty, we're done so check the board
+		    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
-		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+			# Load our PX and PY value
+	    	lw      $t0, PX     #
+	    	lw      $t1, PY     #
 
-		# Load our PX and PY value
-        	lw      $t0, PX     #
-        	lw      $t1, PY     #
+	    	# We add 1 to PY since we're dropping some
+	    	addi    $t1, $t1, 1            # $t1 = $t1 + 1
 
-        	# We add 1 to PY since we're dropping some
-        	addi    $t1, $t1, 1            # $t1 = $t1 + 1
+	    	# If we're not done, we store our new pointer
+	    	sw      $t0, PX        #
+	    	sw      $t1, PY        #
 
-        	# If we're not done, we store our new pointer
-        	sw      $t0, PX        #
-        	sw      $t1, PY        #
+			#valueto be stored for the piece
+			addi	$t3, $zero, 6
 
-		#valueto be stored for the piece
-		addi	$t3, $zero, 6
+			#move to bottom of the right column
+			addi	$t1, $t1, 1
 
-		# writing the values in the new spots
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
-		#erase old spot
-		addi	$t1, $t1, -1
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $zero, $zero	# $a2 = $zero + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
+			#erase old spot
+			addi	$t1, $t1, -2
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
-		#drop middle column
-		addi	$t0, $t0, 1
-		addi	$t1, $t1, 1
+			#drop middle column
+			addi	$t0, $t0,-1
+			addi	$t1, $t1, 1
 
-		# writing the values in the new spots
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
+			# writing the values in the new spots
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
-		#erase old spot of pivot
-		addi	$t1, $t1, -1
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $zero, $zero	# $a2 = $zero + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
+			#erase old spot of pivot
+			addi	$t1, $t1, -1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
-		#drop right column
-		addi	$t0, $t0, 1
+			#drop left column
+			addi	$t0, $t0, -1
 
-		# erase
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $zero, $zero	# $a2 = $t3 + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
+			# erase
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero	# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
-		#draw spike
-		addi	$t1, $t1, 2
-		add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-		add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-		add	$a2, $t3, $zero	# $a2 = $zero + $zero
-		jal	SETXY			# jump to SETXY and save position to $ra
-		add	$t0, $a0, $zero
-		add	$t1, $a1, $zero
+			#draw spike
+			addi	$t1, $t1, 1
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $t3, $zero	# $a2 = $zero + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
-		j	blloop
+			j	blloop
 
 
 
