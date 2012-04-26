@@ -24,7 +24,10 @@ BLACK = pygame.Color(0,0,0)
 RED   = pygame.Color(255,0,0)
 GREEN = pygame.Color(0,255,0)
 BLUE  = pygame.Color(0,0,255)
-
+ORANGE = pygame.Color(255,165,0)
+PURPLE = pygame.Color(160,32,240)
+YELLOW = pygame.Color(255,255,0)
+CYAN = pygame.Color(0,255,255)
 
 WIDTH  = 320
 HEIGHT = 640
@@ -70,9 +73,15 @@ def main_loop():
 
         if data == PROMPT_PIECE:
             print "prompted for piece"
-            #spim.stdin.write(PIPE_PIECE)
-           # spim.stdin.write(L_PIECE)
-            spim.stdin.write(T_PIECE)
+            p = ('1\n', '2\n', '3\n', '4\n', '7\n')
+    	    x =  random.randint(1,5)
+    	    spim.stdin.write(p[x])
+
+    	    #spim.stdin.write(PIPE_PIECE)
+            #spim.stdin.write(L_PIECE)
+            #spim.stdin.write(SQUARE_PIECE)
+            #spim.stdin.write(Z_PIECE)
+
 
         if data == PROMPT_TICK:
             for event in pygame.event.get():
@@ -109,10 +118,18 @@ def main_loop():
                         display_block(x,y, BLACK)
                     elif d == "1":
                         display_block(x,y, RED)
-                    elif d == "7":
+                    elif d == "2":
                         display_block(x,y, GREEN)
-                    else:
+                    elif d == "3":
                         display_block(x,y, BLUE)
+                    elif d == "4":
+                        display_block(x,y, ORANGE)
+                    elif d == "5":
+                        display_block(x,y, PURPLE)
+                    elif d == "6":
+                        display_block(x,y, YElLOW)
+                    elif d == "7":
+                        display_block(x,y, CYAN)
 
         pygame.display.update()
 
