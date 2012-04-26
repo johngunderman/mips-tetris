@@ -131,13 +131,14 @@ def main_loop():
 def display_block(r,c, color):
     BLOCK_X = WIDTH / 8
     BLOCK_Y = HEIGHT / 16
+    BORDER_SIZE = 5
 
     left = c * BLOCK_X
     top = r * BLOCK_Y
 
     surface = pygame.display.get_surface()
 
-    rect = pygame.Rect(left + 1, top + 1, BLOCK_X - 1, BLOCK_Y - 1)
+    rect = pygame.Rect(left + BORDER_SIZE, top + BORDER_SIZE, BLOCK_X - BORDER_SIZE, BLOCK_Y - BORDER_SIZE)
     surface.fill(color, rect)
 
 
