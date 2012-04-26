@@ -8241,6 +8241,7 @@ GAMEOVER:
 
 		printgameover:
 
+			addi	$t5, $zero, 8			# $t5 = $zero + 8
 			beq		$t3, $t5, gameoverloop	# if $t3 == $t5 then gameoverloop
 
 			sw		$t1, ($t0)		#
