@@ -3641,9 +3641,6 @@ shiftlr:
 		        beq	$t4, $zero, lloop	# if $t4 == $zero then lloop
 
 		        sub	$t4, $t4, $t2		# $t4 = $t4 - $t2
-		        beq	$t4, $zero, lloop	# if $t4 == $zero then lloop
-
-		        sub	$t4, $t4, $t2		# $t4 = $t4 - $t2
 
 		        # Set this value to 0 since we dropped below it
 		        add     $a0, $t0, $zero		# $a0 = $t0 + $zero
