@@ -7165,26 +7165,8 @@ rotatebz:
 			addi	$t7, $zero, 6
 			bge	$t0, $t7, dropbzv
 
-			#check if botton right is clear
-			addi	$t0, $t0, 1
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropbzv	# if $v0 != $zero then dropbzv
-
-			#check if top left is clear
-			addi	$t1, $t1, -1
-
-			#check if its still on the board
-			blt	$t1, $zero, dorotatebzvtoh
+			#check if top middle is clear
+			addi	$t1, $t1, -2
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -7201,6 +7183,9 @@ rotatebz:
 			#check if top right is clear
 			addi	$t0, $t0, 1
 
+			#check if its still on the board
+			blt	$t1, $zero, dorotatebzvtoh
+
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -7213,6 +7198,7 @@ rotatebz:
 			# If this position is not free, then we don't want to rotate
 			bne	$v0, $zero, dropbzv	# if $v0 != $zero then dropbzv
 
+
 		dorotatebzvtoh:
 			addi	$t3, $zero, 4
 
@@ -7220,9 +7206,24 @@ rotatebz:
 			lw	$t0, PX		#
 			lw	$t1, PY		#
 
-			addi	$t0, $t0, 1
+			#eraseold start position
+			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
+			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
+			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
+			jal	SETXY			# jump to SETXY and save position to $ra
+			add	$t0, $a0, $zero
+			add	$t1, $a1, $zero
 
-			#mark new squares bottom row
+			#save new pivot
+			addi	$t0, $t0, -1
+			addi	$t1, $t1, -1
+			sw	$t0, PX
+			sw	$t1, PY
+
+			#add top right
+			addi	$t0, $t0, 2
+			addi	$t1, $t1, -1
+
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
 			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
@@ -7231,19 +7232,10 @@ rotatebz:
 			add	$t1, $a1, $zero
 
 			#add middle row squares
-			addi	$t1, $t1, -1
+			addi	$t0, $t0, -1
 
 			#check if its still on the board
 			blt	$t1, $zero, endrotatebzvtoh
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
-			addi	$t0, $t0, 1
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -7253,15 +7245,6 @@ rotatebz:
 			add	$t1, $a1, $zero
 
 			#erase old squares in middle row
-			addi	$t0, $t0, -2
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
 			addi	$t0, $t0, -1
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -7271,17 +7254,8 @@ rotatebz:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			addi	$t1, $t1, -1
-
 			#check if its still on the board
 			blt	$t1, $zero, endrotatebzvtoh
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero	# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
 
 		endrotatebzvtoh:
 			addi	$t9, $zero, 2
@@ -7291,7 +7265,7 @@ rotatebz:
 			#make sure we wont go off the edge
 			beq	$t0, $zero, dropbzh
 
-			#check to see if middle right is empty
+			#check to see if top left is empty
 			addi	$t1, $t1, -1
 
 			#check if its still on the board
@@ -7309,26 +7283,9 @@ rotatebz:
 			# If this position is not free, then we don't want to rotate
 			bne	$v0, $zero, dropbzh	# if $v0 != $zero then dropbzh
 
-			#check to see if middle left is empty
-			addi	$t0, $t0, -1
-
-			# Get the value stored at PX,PY
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			jal	GETARGXY			# jump to GETARGXY and save position to $ra
-
-			# Get our values of x and y back
-			add	$t0, $a0, $zero		# $t0 = $a0 + $zero
-			add	$t1, $a1, $zero		# $t1 = $a1 + $zero
-
-			# If this position is not free, then we don't want to rotate
-			bne	$v0, $zero, dropbzh	# if $v0 != $zero then dropbzh
-
-			#check to see if top row is empty
-			addi	$t1, $t1, -1
-
-			#check if its still on the board
-			blt	$t1, $zero, dorotatebzhtov
+			#check to see if middle bottom is empty
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, 2
 
 			# Get the value stored at PX,PY
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -7349,8 +7306,9 @@ rotatebz:
 			lw	$t0, PX		#
 			lw	$t1, PY		#
 
-			#erase bottom row
-			addi	$t0, $t0, 1
+			#erase top right
+			addi	$t0, $t0, 2
+			addi	$t1, $t1, -1
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
@@ -7359,8 +7317,8 @@ rotatebz:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#erase middle row
-			addi	$t1, $t1, -1
+			#erase middle top
+			addi	$t0, $t0, -1
 
 			#check if its still on the board
 			blt	$t1, $zero, endrotatebzhtov
@@ -7372,25 +7330,7 @@ rotatebz:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			addi	$t0, $t0, 1
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $zero, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
-			#add new middle row squares
-			addi	$t0, $t0, -2
-
-			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
-			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
-			add	$a2, $t3, $zero		# $a2 = $t3 + $zero
-			jal	SETXY			# jump to SETXY and save position to $ra
-			add	$t0, $a0, $zero
-			add	$t1, $a1, $zero
-
+			#draw top left
 			addi	$t0, $t0, -1
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
@@ -7400,11 +7340,12 @@ rotatebz:
 			add	$t0, $a0, $zero
 			add	$t1, $a1, $zero
 
-			#add new top row square
-			addi	$t1, $t1, -1
+			#add new middle row squares
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, 2
 
-			#check if its still on the board
-			blt	$t1, $zero, endrotatebzhtov
+			sw	$t0, PX
+			sw	$t1, PY
 
 			add	$a0, $t0, $zero		# $a0 = $t0 + $zero
 			add	$a1, $t1, $zero		# $a1 = $t1 + $zero
