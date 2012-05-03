@@ -2603,7 +2603,7 @@ CREATET:
    			add		$t1, $a1, $zero		# $t1 = $a1 + $zero
 
    			# If this value isn't 0, we have a collision
-   			bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
+ 			bne		$v0, $zero, CHECKBOARD	# if $v0 != $zero then CHECKBOARD
 
    			# Add 1 to X and Y to check the bottom-most edge
    			addi	$t0, $t0, 1			# $t0 = $t0 + 1
@@ -3143,9 +3143,8 @@ CREATET:
    			lw		$t0, PX		#
    			lw		$t1, PY		#
 
-   			# Subtract 2 from Y to get to the space below our piece
-   			addi	$t2, $zero, 2		# $t2 = $zero + 2
-   			sub		$t1, $t1, $t2		# $t1 = $t1 - $t2
+   			# Add 2 to Y to get to the space below our piece
+   			addi	$t1, $t1, 2			# $t1 = $t1 + 2
 
    			# If this space 17 then we don't allow rotation
    			addi	$t2, $zero, 17		# $t2 = $zero + 17
@@ -7913,7 +7912,7 @@ rotatebz:
 		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
 		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
 		#check other hazard spot
 		addi	$t0, $t0, -1
@@ -7929,18 +7928,18 @@ rotatebz:
 		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
 		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
 		# Load our PX and PY value
-        	lw      $t0, PX     #
-        	lw      $t1, PY     #
+    	lw      $t0, PX     #
+    	lw      $t1, PY     #
 
-        	# We add 1 to PY since we're dropping some
-        	addi    $t1, $t1, 1            # $t1 = $t1 + 1
+    	# We add 1 to PY since we're dropping some
+    	addi    $t1, $t1, 1            # $t1 = $t1 + 1
 
-        	# If we're not done, we store our new pointer
-        	sw      $t0, PX        #
-        	sw      $t1, PY        #
+    	# If we're not done, we store our new pointer
+    	sw      $t0, PX        #
+    	sw      $t1, PY        #
 
 		#valueto be stored for the piece
 		addi	$t3, $zero, 4
@@ -8007,7 +8006,7 @@ rotatebz:
 		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
 		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
 		#check other hazard spot
 		addi	$t0, $t0, 1
@@ -8022,7 +8021,7 @@ rotatebz:
 		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
 		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
 		#check other hazard spot
 		addi	$t0, $t0, 1
@@ -8038,18 +8037,18 @@ rotatebz:
 		add	$t1, $a1, $zero		# $t1 = $a1 + $zero
 
 		# If the space isn't empty, we're done so check the board
-        	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
+    	bne     $v0, $zero, CHECKBOARD # if $v0 != $zero then CHECKBOARD
 
 		# Load our PX and PY value
-        	lw      $t0, PX     #
-        	lw      $t1, PY     #
+    	lw      $t0, PX     #
+    	lw      $t1, PY     #
 
-        	# We add 1 to PY since we're dropping some
-        	addi    $t1, $t1, 1            # $t1 = $t1 + 1
+    	# We add 1 to PY since we're dropping some
+    	addi    $t1, $t1, 1            # $t1 = $t1 + 1
 
-        	# If we're not done, we store our new pointer
-        	sw      $t0, PX        #
-        	sw      $t1, PY        #
+    	# If we're not done, we store our new pointer
+    	sw      $t0, PX        #
+    	sw      $t1, PY        #
 
 		#valueto be stored for the piece
 		addi	$t3, $zero, 4
@@ -8119,8 +8118,10 @@ rotatebz:
 .globl CHECKBOARD
 CHECKBOARD:
 
+	jal		RESET				# jump to RESET and save position to $ra
+
 	# We want to check the top row of our board
-	addi	$t9, $zero, 0			# $t1 = $zero + 0
+	addi	$t7, $zero, 0			# $t1 = $zero + 0
 	addi	$t4, $zero, 0			# $t4 = $zero + 0
 
 	j		toprow				# jump to toprow
@@ -8133,9 +8134,9 @@ CHECKBOARD:
 		bne		$v0, $zero, GAMEOVER	# vf $t0 != $zero then GAMEOVER
 
 		# If we hit space 8 on our board then we are on the second row
-		addi	$t0, $zero, 8			# $t0 = $zero + 8
-		addi	$t9, $t9, 1			# $t1 = $zero + 1
-		beq		$t9, $t0, aftertop	# if $t1 == $t0 then aftertop
+		addi	$t0, $zero, 8		# $t0 = $zero + 8
+		addi	$t7, $t7, 1			# $t1 = $zero + 1
+		beq		$t7, $t0, aftertop	# if $t1 == $t0 then aftertop
 
 		j		toprow				# jump to toprow
 
@@ -8225,52 +8226,61 @@ CHECKBOARD:
 .globl GAMEOVER
 GAMEOVER:
 
-	la		$t0, 512(BOARD)		#
-	la		$t4, 0(BOARD)		#
+	# Establish a counter for our row, starting from the bottom
+	addi	$t9, $zero, 16		# $t3 = $zero + 1
 
-	addi	$t2, $zero, 4		# $t2 = $zero + 4
-
-	j		endgame				# jump to endgame
-
-#	j		gameoverloop				# jump to gameoverloop
+	# Start the game ending loop
+	j		gameoverloop		# jump to gameoverloop
 
 	gameoverloop:
 
-		beq		$t4, $t0, endgame	# if $t4 == $t0 then endgame
+ 		# Print out our board state. This will be printed at the completetion of each run
+		jal		PRINTBOARD			# jump to PRINTBOARD and save position to $ra
 
-		addi	$t1, $zero, 7		# $t1 = $zero + 0
-		addi	$t3, $zero, 1		# $t3 = $zero + 1
+		# Decrement our row by 1 to look at the next row up
+		addi	$t0, $zero, 1		# $t0 = $zero + 1
+		sub		$t9, $t9, $t0		# $t9 = $t9 - $t0
+
+		# If we get to row -1 then we are outside the board so we stop
+		addi	$t0, $zero, -1		# $t0 = $zero + -1
+		beq		$t9, $t0, endgame	# if $t8 == $t0 then endgame
+
+		# This will be a X counter starting from the end
+		addi	$t8, $zero, 7		# $t1 = $zero + 0
+
+		# Jump to the loop that controls each row
+		j		printgameover		# jump to printgameover
 
 		printgameover:
 
-			addi	$t5, $zero, 8			# $t5 = $zero + 8
-			beq		$t3, $t5, gameoverloop	# if $t3 == $t5 then gameoverloop
+			# Set the value at X,Y to the color for that columns number
+			add		$a0, $t8, $zero		# $a0 = $t8 + $zero
+			add		$a1, $t9, $zero		# $a1 = $t9 + $zero
+			add		$a2, $t8, $zero		# $a2 = $t8 + $zero
+			jal		SETXY				# jump to SETXY and save position to $ra
 
-			sw		$t1, ($t0)		#
+			# Prompt for user input from Python
+      		li        $a0, 1        # $a0 = 1
+      		li        $v0, 1        # $v0 = 1
+      		syscall
 
-			addi	$t5, $zero, 1			# $t5 = $zero + 1
-			sub		$t1, $t1, $t5		# $t1 = $t1 - $t5
-			sub		$t0, $t0, $t2		# $t0 = $t0 - $t2
-
-			addi	$t3, $t3, 1			# $t3 = $t3 + 1
-
-			addi	$t5, $zero, 8			# $t5 = $zero + 8
-			beq		$t3, $t5, PRINTBOARD	# if $t3 == $t5 then PRINTBOARD
+	        # Print a new line
+	        li      $v0, 4      # system call #4 - print string
+	        la      $a0, newline    # $a0 = $zero +
+	        syscall             # execute
 
 			# Make MIPS wait for integer input
 			li		$v0, 5		# $v0 = 5
 			syscall				# execute
 
- 			# Prompt for user input from Python
-      		li        $a0, 1        # $a0 = 1
-      		li        $v0, 1        # $v0 = 1
-       		syscall
+			# If our X counter is 0 then we jump up to print the board and decrement rows
+			beq		$t8, $zero, gameoverloop	# if $t8 == $zero then gameoverloop
 
-	        # Print a new line
-	        li      $v0, 4      # system call #4 - print string
-	        la      $a0, newline    # $a0 = $zero + 15
-	        syscall             # execute
+			# Decrement our X counter
+			addi	$t0, $zero, 1		# $t0 = $zero + 1
+			sub		$t8, $t8, $t0		# $t8 = $t8 - $t0
 
+			# Loop back to the top
 			j		printgameover				# jump to printgameover
 
 	endgame:
@@ -8285,5 +8295,6 @@ GAMEOVER:
 	    la      $a0, newline    # $a0 = $zero + 15
 	    syscall             # execute
 
+	    # End the spim program
 		li		$v0, 10			# Syscall to end program
 		syscall

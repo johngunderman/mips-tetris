@@ -65,9 +65,7 @@ def main_loop():
 
         if data == PROMPT_PIECE:
             print "prompted for piece"
-
-            #spim.stdin.write(random.choice(PIECES))
-            spim.stdin.write(T_PIECE)
+            spim.stdin.write(random.choice(PIECES))
 
         if data == PROMPT_TICK:
             for event in pygame.event.get():
@@ -86,7 +84,7 @@ def main_loop():
                         tick_event = MOVE_LEFT
                     elif event.key == pygame.K_UP:
                         print "up arrow hit"
-                        tick_event = ROTATE
+                        tick_event = R22OTATE
 
             print "ticking"
             print "sending: " + tick_event
