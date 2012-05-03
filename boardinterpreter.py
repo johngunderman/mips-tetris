@@ -66,7 +66,8 @@ def main_loop():
         if data == PROMPT_PIECE:
             print "prompted for piece"
 
-            spim.stdin.write(random.choice(PIECES))
+            #spim.stdin.write(random.choice(PIECES))
+            spim.stdin.write(T_PIECE)
 
         if data == PROMPT_TICK:
             for event in pygame.event.get():
