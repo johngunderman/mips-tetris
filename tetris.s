@@ -8059,8 +8059,6 @@ rotatebz:
 .globl CHECKBOARD
 CHECKBOARD:
 
-	jal		RESET				# jump to RESET and save position to $ra
-
 	# We want to check the top row of our board
 	addi	$t7, $zero, 0			# $t1 = $zero + 0
 	addi	$t4, $zero, 0			# $t4 = $zero + 0
