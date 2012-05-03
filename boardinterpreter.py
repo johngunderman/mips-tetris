@@ -84,7 +84,7 @@ def main_loop():
                         tick_event = MOVE_LEFT
                     elif event.key == pygame.K_UP:
                         print "up arrow hit"
-                        tick_event = R22OTATE
+                        tick_event = ROTATE
 
             print "ticking"
             print "sending: " + tick_event
