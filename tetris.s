@@ -6093,7 +6093,7 @@ CREATEZ:
 
 	# We're picking our middle position to be 3 so let's move X there
 	# We also want to make sure we're starting at our top row as well
-	addi	$t0, $zero, 3			# $t0 = X + 3
+	addi	$t0, $zero, 4			# $t0 = X + 3
 	addi	$t1, $zero, 0			# $t1 = $zero + 0
 
 	# Store the value for safe keeping
@@ -6108,7 +6108,7 @@ CREATEZ:
 	jal	SETXY
 
 	addi	$t0, $a0, -1
-	add	$t1, $zero, $a1
+	add		$t1, $zero, $a1
 
 	addi	$t2, $zero, 3
 	add	$a0, $zero, $t0

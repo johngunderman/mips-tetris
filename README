@@ -4,8 +4,8 @@ Dependencies:
 * Pygame
 * spim
 
-You probably should be running this on a unix system. the spim command
-line doesn't exist in Windows.
+You need to run this under Unix, Windows does not have a command
+line version of spim which our program depends on.
 
 
 How it works:
@@ -17,7 +17,18 @@ starts up spim as a subprocess and then manages its STDIN and STDOUT
 for communcation
 
 
-How to run it
+How to run it:
 =============
 
 $ python boardinterpreter.py
+
+
+Bugs:
+=====
+
+We currently have one known bug that involves rotating the T-piece
+near the top of the board. In some instances the piece will freeze
+and MIPS will request a new piece from Python. We have been unable
+to find the bug or replicate it consistantly. The bug does not
+happen in every instance making it difficult to track down. We would
+love any suggestions on how to squash this bug.
