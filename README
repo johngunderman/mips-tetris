@@ -32,3 +32,6 @@ and MIPS will request a new piece from Python. We have been unable
 to find the bug or replicate it consistantly. The bug does not
 happen in every instance making it difficult to track down. We would
 love any suggestions on how to squash this bug.
+
+Also, some of the pieces may no behave exactly as they should when it
+comes to picking a rotation pivot.
